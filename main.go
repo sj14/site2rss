@@ -4,12 +4,14 @@ import (
 	"bytes"
 	"crypto/md5"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -37,7 +39,13 @@ type LinkTitle struct {
 }
 
 func main() {
-	confBytes, err := os.ReadFile("config/config.toml")
+	var (
+		configPath = flag.String("config", "config/config.toml", "path to the config file")
+		cachePath  = flag.String("cache", "cache", "path to the cache dir")
+	)
+	flag.Parse()
+
+	confBytes, err := os.ReadFile(*configPath)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -51,7 +59,7 @@ func main() {
 
 	go func() {
 		for _, site := range config.Sites {
-			handleSite(site)
+			handleSite(site, *cachePath)
 		}
 		time.Sleep(1 * time.Hour)
 	}()
@@ -62,7 +70,9 @@ func main() {
 	}
 }
 
-func handleSite(site Site) {
+var state = map[string]string{}
+
+func handleSite(site Site, cachePath string) {
 	resp, err := http.Get(site.URL)
 	if err != nil {
 		log.Panicln(err)
@@ -99,9 +109,10 @@ func handleSite(site Site) {
 
 	var oldEntries []LinkTitle
 
-	loaded, err := os.ReadFile("/cache/" + strings.ToLower(site.Name) + ".json")
+	loaded, err := os.ReadFile(filepath.Join(cachePath, site.Name+".json"))
 	if err != nil {
-		if !strings.Contains(err.Error(), "no such file or directory") {
+		if !strings.Contains(err.Error(), "no such file or directory") &&
+			!strings.Contains(err.Error(), "The system cannot find the file specified.") {
 			log.Panicln(err)
 		}
 	} else {
@@ -124,7 +135,7 @@ func handleSite(site Site) {
 		log.Fatal(err)
 	}
 
-	err = os.WriteFile("/cache/"+site.Name+".json", b, os.ModePerm)
+	err = os.WriteFile(filepath.Join(cachePath, site.Name+".json"), b, os.ModePerm)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -150,24 +161,31 @@ func handleSite(site Site) {
 		log.Fatal(err)
 	}
 
+	state[strings.ToLower(site.Name)+"_rss"] = rss
+
 	atom, err := feed.ToAtom()
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	state[strings.ToLower(site.Name)+"_atom"] = atom
 
 	json, err := feed.ToJSON()
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	state[strings.ToLower(site.Name)+"_json"] = json
+
+	// TODO: only needs to be registered once
 	http.HandleFunc("/"+strings.ToLower(site.Name)+"/rss", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(rss))
+		w.Write([]byte(state[strings.ToLower(site.Name)+"_rss"]))
 	})
 	http.HandleFunc("/"+strings.ToLower(site.Name)+"/atom", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(atom))
+		w.Write([]byte(state[strings.ToLower(site.Name)+"_atom"]))
 	})
 	http.HandleFunc("/"+strings.ToLower(site.Name)+"/json", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(json))
+		w.Write([]byte(state[strings.ToLower(site.Name)+"_json"]))
 	})
 }
 
