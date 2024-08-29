@@ -40,8 +40,10 @@ type LinkTitle struct {
 
 func main() {
 	var (
-		configPath = flag.String("config", "config/config.toml", "path to the config file")
-		cachePath  = flag.String("cache", "cache", "path to the cache dir")
+		configPath     = flag.String("config", "config/config.toml", "path to the config file")
+		cachePath      = flag.String("cache", "cache", "path to the cache dir")
+		updateInterval = flag.Duration("interval", 1*time.Hour, "update interval")
+		addr           = flag.String("address", ":8080", "listen address")
 	)
 	flag.Parse()
 
@@ -58,13 +60,27 @@ func main() {
 	}
 
 	go func() {
-		for _, site := range config.Sites {
-			handleSite(site, *cachePath)
+		for {
+			for _, site := range config.Sites {
+				updateCache(site, *cachePath)
+			}
+			time.Sleep(*updateInterval)
 		}
-		time.Sleep(1 * time.Hour)
 	}()
 
-	err = http.ListenAndServe(":8080", nil)
+	for _, site := range config.Sites {
+		http.HandleFunc("/"+strings.ToLower(site.Name)+"/rss", func(w http.ResponseWriter, r *http.Request) {
+			w.Write([]byte(state[strings.ToLower(site.Name)+"_rss"]))
+		})
+		http.HandleFunc("/"+strings.ToLower(site.Name)+"/atom", func(w http.ResponseWriter, r *http.Request) {
+			w.Write([]byte(state[strings.ToLower(site.Name)+"_atom"]))
+		})
+		http.HandleFunc("/"+strings.ToLower(site.Name)+"/json", func(w http.ResponseWriter, r *http.Request) {
+			w.Write([]byte(state[strings.ToLower(site.Name)+"_json"]))
+		})
+	}
+
+	err = http.ListenAndServe(*addr, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -72,7 +88,7 @@ func main() {
 
 var state = map[string]string{}
 
-func handleSite(site Site, cachePath string) {
+func updateCache(site Site, cachePath string) {
 	resp, err := http.Get(site.URL)
 	if err != nil {
 		log.Panicln(err)
@@ -130,6 +146,16 @@ func handleSite(site Site, cachePath string) {
 		}
 	}
 
+	slices.SortStableFunc(linksAndTitles, func(a, b LinkTitle) int {
+		if a.AddedAt == b.AddedAt {
+			return 0
+		}
+		if a.AddedAt.UnixNano() > b.AddedAt.UnixNano() {
+			return -1
+		}
+		return 1
+	})
+
 	b, err := json.MarshalIndent(linksAndTitles, "", "  ")
 	if err != nil {
 		log.Fatal(err)
@@ -176,17 +202,6 @@ func handleSite(site Site, cachePath string) {
 	}
 
 	state[strings.ToLower(site.Name)+"_json"] = json
-
-	// TODO: only needs to be registered once
-	http.HandleFunc("/"+strings.ToLower(site.Name)+"/rss", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(state[strings.ToLower(site.Name)+"_rss"]))
-	})
-	http.HandleFunc("/"+strings.ToLower(site.Name)+"/atom", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(state[strings.ToLower(site.Name)+"_atom"]))
-	})
-	http.HandleFunc("/"+strings.ToLower(site.Name)+"/json", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(state[strings.ToLower(site.Name)+"_json"]))
-	})
 }
 
 func toLinkTitle(s string, linkPrefix string) LinkTitle {
