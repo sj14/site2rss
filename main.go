@@ -217,8 +217,14 @@ func toLinkTitle(s string, linkPrefix string) LinkTitle {
 	if err != nil {
 		log.Panicln()
 	}
+
+	link = strings.TrimSpace(link)
+	if !strings.HasPrefix(link, "http") {
+		link = "https://" + link
+	}
+
 	return LinkTitle{
-		Link:    strings.TrimSpace(link),
+		Link:    link,
 		Title:   strings.TrimSpace(split[1]),
 		AddedAt: time.Now().UTC(),
 	}
