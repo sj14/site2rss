@@ -13,10 +13,9 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
-
-	"slices"
 
 	"github.com/gorilla/feeds"
 	"github.com/pelletier/go-toml/v2"
@@ -41,7 +40,7 @@ type Site struct {
 	DescriptionEnd   string
 }
 
-type LinkTitle struct {
+type Item struct {
 	Title       string
 	Link        string
 	Description string
@@ -112,7 +111,7 @@ func updateCache(site Site, cachePath string) {
 
 	rest := string(body)
 
-	var linksAndTitles []LinkTitle
+	var items []Item
 	for {
 		_, after, found := strings.Cut(rest, site.ItemStart)
 		if !found {
@@ -170,17 +169,15 @@ func updateCache(site Site, cachePath string) {
 			link = "https://" + link
 		}
 
-		linkTitle := LinkTitle{
+		items = append(items, Item{
 			Link:        link,
 			Title:       strings.TrimSpace(titleRaw),
 			Description: strings.TrimSpace(html.UnescapeString(descriptionRaw)),
 			AddedAt:     time.Now().UTC(),
-		}
-
-		linksAndTitles = append(linksAndTitles, linkTitle)
+		})
 	}
 
-	var oldEntries []LinkTitle
+	var oldEntries []Item
 
 	loaded, err := os.ReadFile(filepath.Join(cachePath, site.Name+".json"))
 	if err != nil {
@@ -195,15 +192,15 @@ func updateCache(site Site, cachePath string) {
 		}
 	}
 
-	for newIdx, new := range linksAndTitles {
+	for newIdx, new := range items {
 		for _, old := range oldEntries {
 			if old.Title == new.Title && old.Link == new.Link && old.Description == new.Description {
-				linksAndTitles[newIdx].AddedAt = old.AddedAt
+				items[newIdx].AddedAt = old.AddedAt
 			}
 		}
 	}
 
-	slices.SortStableFunc(linksAndTitles, func(a, b LinkTitle) int {
+	slices.SortStableFunc(items, func(a, b Item) int {
 		if a.AddedAt == b.AddedAt {
 			return 0
 		}
@@ -213,7 +210,7 @@ func updateCache(site Site, cachePath string) {
 		return 1
 	})
 
-	b, err := json.MarshalIndent(linksAndTitles, "", "  ")
+	b, err := json.MarshalIndent(items, "", "  ")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -229,7 +226,7 @@ func updateCache(site Site, cachePath string) {
 		Description: site.SiteDescription,
 	}
 
-	for _, lt := range linksAndTitles {
+	for _, lt := range items {
 		id := fmt.Sprintf("%x", md5.Sum(slices.Concat([]byte(lt.Title), []byte(lt.AddedAt.String()))))
 		feed.Items = append(feed.Items, &feeds.Item{
 			Id:          id,
