@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"html"
 	"io"
 	"log"
 	"net/http"
@@ -26,22 +27,25 @@ type Config struct {
 }
 
 type Site struct {
-	Name        string
-	Title       string
-	Description string
-	URL         string
-	ItemStart   string
-	ItemEnd     string
-	LinkStart   string
-	LinkEnd     string
-	TitleStart  string
-	TitleEnd    string
+	Name             string
+	Title            string
+	SiteDescription  string
+	URL              string
+	ItemStart        string
+	ItemEnd          string
+	LinkStart        string
+	LinkEnd          string
+	TitleStart       string
+	TitleEnd         string
+	DescriptionStart string
+	DescriptionEnd   string
 }
 
 type LinkTitle struct {
-	Title   string
-	Link    string
-	AddedAt time.Time
+	Title       string
+	Link        string
+	Description string
+	AddedAt     time.Time
 }
 
 func main() {
@@ -128,17 +132,27 @@ func updateCache(site Site, cachePath string) {
 
 		linkRaw, _, found = strings.Cut(linkRaw, site.LinkEnd)
 		if !found {
-			break
+			continue
 		}
 
 		_, titleRaw, found := strings.Cut(itemRaw, site.TitleStart)
 		if !found {
-			break
+			continue
 		}
 
 		titleRaw, _, found = strings.Cut(titleRaw, site.TitleEnd)
 		if !found {
-			break
+			continue
+		}
+
+		_, descriptionRaw, found := strings.Cut(itemRaw, site.DescriptionStart)
+		if !found {
+			continue
+		}
+
+		descriptionRaw, _, found = strings.Cut(descriptionRaw, site.DescriptionEnd)
+		if !found {
+			continue
 		}
 
 		siteURL, err := url.Parse(site.URL)
@@ -157,9 +171,10 @@ func updateCache(site Site, cachePath string) {
 		}
 
 		linkTitle := LinkTitle{
-			Link:    link,
-			Title:   strings.TrimSpace(titleRaw),
-			AddedAt: time.Now().UTC(),
+			Link:        link,
+			Title:       strings.TrimSpace(titleRaw),
+			Description: strings.TrimSpace(html.UnescapeString(descriptionRaw)),
+			AddedAt:     time.Now().UTC(),
 		}
 
 		linksAndTitles = append(linksAndTitles, linkTitle)
@@ -182,7 +197,7 @@ func updateCache(site Site, cachePath string) {
 
 	for newIdx, new := range linksAndTitles {
 		for _, old := range oldEntries {
-			if old.Title == new.Title && old.Link == new.Link {
+			if old.Title == new.Title && old.Link == new.Link && old.Description == new.Description {
 				linksAndTitles[newIdx].AddedAt = old.AddedAt
 			}
 		}
@@ -211,16 +226,17 @@ func updateCache(site Site, cachePath string) {
 	feed := &feeds.Feed{
 		Title:       site.Title,
 		Link:        &feeds.Link{Href: site.URL},
-		Description: site.Description,
+		Description: site.SiteDescription,
 	}
 
 	for _, lt := range linksAndTitles {
 		id := fmt.Sprintf("%x", md5.Sum(slices.Concat([]byte(lt.Title), []byte(lt.AddedAt.String()))))
 		feed.Items = append(feed.Items, &feeds.Item{
-			Id:      id,
-			Title:   lt.Title,
-			Link:    &feeds.Link{Href: lt.Link},
-			Created: lt.AddedAt,
+			Id:          id,
+			Title:       lt.Title,
+			Link:        &feeds.Link{Href: lt.Link},
+			Description: lt.Description,
+			Created:     lt.AddedAt,
 		})
 	}
 
