@@ -2,10 +2,8 @@ package main
 
 import (
 	"bytes"
-	"crypto/md5"
 	"encoding/json"
 	"flag"
-	"fmt"
 	"html"
 	"io"
 	"log"
@@ -227,9 +225,8 @@ func updateCache(site Site, cachePath string) {
 	}
 
 	for _, lt := range items {
-		id := fmt.Sprintf("%x", md5.Sum(slices.Concat([]byte(lt.Title), []byte(lt.AddedAt.String()))))
 		feed.Items = append(feed.Items, &feeds.Item{
-			Id:          id,
+			Id:          lt.Link,
 			Title:       lt.Title,
 			Link:        &feeds.Link{Href: lt.Link},
 			Description: lt.Description,
