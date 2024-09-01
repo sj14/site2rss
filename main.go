@@ -30,6 +30,12 @@ type Site struct {
 	Title       string
 	Description string
 	URL         string
+	ItemStart   string
+	ItemEnd     string
+	LinkStart   string
+	LinkEnd     string
+	TitleStart  string
+	TitleEnd    string
 }
 
 type LinkTitle struct {
@@ -104,13 +110,33 @@ func updateCache(site Site, cachePath string) {
 
 	var linksAndTitles []LinkTitle
 	for {
-		_, after, found := strings.Cut(rest, "<a href=") // TODO
+		_, after, found := strings.Cut(rest, site.ItemStart)
 		if !found {
 			break
 		}
 
-		var linkTitleRaw string
-		linkTitleRaw, rest, found = strings.Cut(after, "class=\"teaser-title-link m-clickarea-action js-track-click\"") // TODO
+		var itemRaw string
+		itemRaw, rest, found = strings.Cut(after, site.ItemEnd)
+		if !found {
+			break
+		}
+
+		_, linkRaw, found := strings.Cut(itemRaw, site.LinkStart)
+		if !found {
+			break
+		}
+
+		linkRaw, _, found = strings.Cut(linkRaw, site.LinkEnd)
+		if !found {
+			break
+		}
+
+		_, titleRaw, found := strings.Cut(itemRaw, site.TitleStart)
+		if !found {
+			break
+		}
+
+		titleRaw, _, found = strings.Cut(titleRaw, site.TitleEnd)
 		if !found {
 			break
 		}
@@ -120,7 +146,23 @@ func updateCache(site Site, cachePath string) {
 			log.Fatal(err)
 		}
 
-		linksAndTitles = append(linksAndTitles, toLinkTitle(linkTitleRaw, siteURL.Host))
+		link, err := url.JoinPath(siteURL.Host, linkRaw)
+		if err != nil {
+			log.Panicln()
+		}
+
+		link = strings.TrimSpace(link)
+		if !strings.HasPrefix(link, "http") {
+			link = "https://" + link
+		}
+
+		linkTitle := LinkTitle{
+			Link:    link,
+			Title:   strings.TrimSpace(titleRaw),
+			AddedAt: time.Now().UTC(),
+		}
+
+		linksAndTitles = append(linksAndTitles, linkTitle)
 	}
 
 	var oldEntries []LinkTitle
@@ -202,30 +244,4 @@ func updateCache(site Site, cachePath string) {
 	}
 
 	state[strings.ToLower(site.Name)+"_json"] = json
-}
-
-func toLinkTitle(s string, linkPrefix string) LinkTitle {
-	s = strings.ReplaceAll(s, "\"", "")
-	s = strings.ReplaceAll(s, "title=", "")
-
-	split := strings.SplitN(s, " ", 2)
-	if len(split) != 2 {
-		log.Panicln()
-	}
-
-	link, err := url.JoinPath(linkPrefix, split[0])
-	if err != nil {
-		log.Panicln()
-	}
-
-	link = strings.TrimSpace(link)
-	if !strings.HasPrefix(link, "http") {
-		link = "https://" + link
-	}
-
-	return LinkTitle{
-		Link:    link,
-		Title:   strings.TrimSpace(split[1]),
-		AddedAt: time.Now().UTC(),
-	}
 }
