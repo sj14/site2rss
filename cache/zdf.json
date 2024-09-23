@@ -1,14 +1,140 @@
 [
   {
-    "Title": "Beckenrand Sheriff",
-    "Link": "https://www.zdf.de/filme/spielfilm-highlights/beckenrand-sheriff-100.html",
-    "Description": "Sommerkomödie mit deutscher Starbesetzung",
+    "Title": "Das Tal der geheimen Gräber",
+    "Link": "https://www.zdf.de/filme/baztan-trilogie/das-tal-der-geheimen-graeber-102.html",
+    "Description": "Der packende dritte Teil der Baztan-Trilogie",
+    "AddedAt": "2024-09-23T14:51:37.439118Z"
+  },
+  {
+    "Title": "Erwartung",
+    "Link": "https://www.zdf.de/filme/jussi-adler-olsen/jussi-adler-olsen-erwartung-100.html",
+    "Description": "Der neueste Fall von Kommissar Mørck und Assad",
+    "AddedAt": "2024-09-23T14:51:37.439108Z"
+  },
+  {
+    "Title": "Todesfalle Nordsee",
+    "Link": "https://www.zdf.de/filme/spielfilm-highlights/todesfalle-nordsee-102.html",
+    "Description": "Packender Katastrophen-Thriller aus Norwegen",
+    "AddedAt": "2024-09-23T14:51:37.439093Z"
+  },
+  {
+    "Title": "Sorry We Missed You",
+    "Link": "https://www.zdf.de/filme/spielfilm-highlights/sorry-we-missed-you-108.html",
+    "Description": "Emotional packendes Drama von Regisseur Ken Loach",
+    "AddedAt": "2024-09-23T14:51:37.439081Z"
+  },
+  {
+    "Title": "Die Agentin",
+    "Link": "https://www.zdf.de/3sat/spielfilm/die-agentin-110.html",
+    "Description": "Verfilmung des Bestseller-Romans mit Diane Kruger",
+    "AddedAt": "2024-09-23T14:51:37.439057Z"
+  },
+  {
+    "Title": "Fear Dot Com",
+    "Link": "https://www.zdf.de/filme/spielfilm-highlights/fear-dot-com-100.html",
+    "Description": "Mystery-Thriller mit Stephen Dorff und Natascha McElhone",
+    "AddedAt": "2024-09-23T14:51:37.439052Z"
+  },
+  {
+    "Title": "Geisterfjord",
+    "Link": "https://www.zdf.de/filme/spielfilm-highlights/geisterfjord-100.html",
+    "Description": "Atmosphärisches Mystery-Drama aus Island",
+    "AddedAt": "2024-09-23T14:51:37.439042Z"
+  },
+  {
+    "Title": "Tides - Kampf um die Zukunft",
+    "Link": "https://www.zdf.de/filme/spielfilm-highlights/tides---kampf-um-die-zukunft-100.html",
+    "Description": "Dystopische Zukunftsvision von Regisseur Tim Fehlbaum",
+    "AddedAt": "2024-09-23T14:51:37.439012Z"
+  },
+  {
+    "Title": "The Northman",
+    "Link": "https://www.zdf.de/filme/spielfilm-highlights/the-northman-100.html",
+    "Description": "Wikinger-Saga mit internationaler Starbesetzung",
+    "AddedAt": "2024-09-23T14:51:37.439006Z"
+  },
+  {
+    "Title": "Heartbeast",
+    "Link": "https://www.zdf.de/filme/spielfilm-highlights/heartbeast-100.html",
+    "Description": "Dramatische und gefühlvolle Coming-of-Age-Geschichte",
+    "AddedAt": "2024-09-23T14:51:37.439001Z"
+  },
+  {
+    "Title": "Fall",
+    "Link": "https://www.zdf.de/filme/spielfilm-highlights/fall-112.html",
+    "Description": "Atemberaubend spannendes Survivalabenteuer",
+    "AddedAt": "2024-09-23T14:51:37.438995Z"
+  },
+  {
+    "Title": "Das Netz",
+    "Link": "https://www.zdf.de/filme/spielfilm-highlights/das-netz-108.html",
+    "Description": "Noch immer aktueller Cyber-Thriller mit Sandra Bullock",
+    "AddedAt": "2024-09-23T14:51:37.438991Z"
+  },
+  {
+    "Title": "Countdown in Madrid",
+    "Link": "https://www.zdf.de/filme/spielfilm-highlights/countdown-in-madrid-102.html",
+    "Description": "Spanisch-französischer Heist-Thriller mit Topbesetzung",
+    "AddedAt": "2024-09-23T14:51:37.438984Z"
+  },
+  {
+    "Title": "Verführung einer Fremden",
+    "Link": "https://www.zdf.de/filme/spielfilme/verfuehrung-einer-fremden-100.html",
+    "Description": "Wendungsreicher Thriller mit Halle Berry und Bruce Willis",
+    "AddedAt": "2024-09-23T14:51:37.438977Z"
+  },
+  {
+    "Title": "The Locksmith - Der Spezialist",
+    "Link": "https://www.zdf.de/filme/spielfilm-highlights/the-locksmith---der-spezialist-100.html",
+    "Description": "Thriller-Drama mit Ryan Phillippe und Kate Bosworth",
+    "AddedAt": "2024-09-23T14:51:37.438964Z"
+  },
+  {
+    "Title": "A Breath Away",
+    "Link": "https://www.zdf.de/filme/spielfilm-highlights/a-breath-away-100.html",
+    "Description": "Katastrophendrama mit Romain Duris und Olga Kurylenko",
+    "AddedAt": "2024-09-01T09:55:15.6520741Z"
+  },
+  {
+    "Title": "Hell",
+    "Link": "https://www.zdf.de/filme/spielfilm-highlights/hell-100.html",
+    "Description": "Dystopischer Horror-Thriller von Tim Fehlbaum",
+    "AddedAt": "2024-09-01T09:55:15.6520741Z"
+  },
+  {
+    "Title": "The Last Journey - Die letzte Reise der Menschheit",
+    "Link": "https://www.zdf.de/filme/spielfilm-highlights/the-last-journey---die-letzte-reise-der-menschheit-100.html",
+    "Description": "Science-Fiction-Drama von Regisseur Romain Quirot",
+    "AddedAt": "2024-09-01T09:55:15.6520741Z"
+  },
+  {
+    "Title": "Walhalla - Die Legende von Thor",
+    "Link": "https://www.zdf.de/filme/spielfilm-highlights/walhalla---die-legende-von-thor-100.html",
+    "Description": "Fantasy-Abenteuer für Fans der nordischen Mythologie",
+    "AddedAt": "2024-09-01T09:55:15.6520741Z"
+  },
+  {
+    "Title": "Arctic",
+    "Link": "https://www.zdf.de/filme/spielfilm-highlights/arctic-100.html",
+    "Description": "Der Kampf Mensch gegen Natur in seiner extremsten Form",
+    "AddedAt": "2024-09-01T09:55:15.6520741Z"
+  },
+  {
+    "Title": "Die Königin des Nordens",
+    "Link": "https://www.zdf.de/filme/spielfilm-highlights/die-koenigin-des-nordens-100.html",
+    "Description": "Abenteuer-Epos über Margarethe I. mit Trine Dyrholm",
     "AddedAt": "2024-09-01T09:55:15.6520741Z"
   },
   {
     "Title": "Papillon",
     "Link": "https://www.zdf.de/filme/spielfilm-highlights/papillon-100.html",
     "Description": "Charlie Hunnam und Rami Malek im Remake des Klassikers",
+    "AddedAt": "2024-09-01T09:55:15.6520741Z"
+  },
+  {
+    "Title": "Beckenrand Sheriff",
+    "Link": "https://www.zdf.de/filme/spielfilm-highlights/beckenrand-sheriff-100.html",
+    "Description": "Sommerkomödie mit deutscher Starbesetzung",
     "AddedAt": "2024-09-01T09:55:15.6520741Z"
   },
   {
@@ -24,123 +150,9 @@
     "AddedAt": "2024-09-01T09:55:15.6520741Z"
   },
   {
-    "Title": "Wuff - Folge dem Hund",
-    "Link": "https://www.zdf.de/filme/spielfilm-highlights/wuff---folge-dem-hund-100.html",
-    "Description": "Deutsche Beziehungskomödie von Detlev Buck",
-    "AddedAt": "2024-09-01T09:55:15.6520741Z"
-  },
-  {
-    "Title": "50 erste Dates",
-    "Link": "https://www.zdf.de/filme/spielfilme/50-erste-dates-100.html",
-    "Description": "Romantische Komödie mit Adam Sandler und Drew Barrymore",
-    "AddedAt": "2024-09-01T09:55:15.6520741Z"
-  },
-  {
-    "Title": "A Breath Away",
-    "Link": "https://www.zdf.de/filme/spielfilm-highlights/a-breath-away-100.html",
-    "Description": "Katastrophendrama mit Romain Duris und Olga Kurylenko",
-    "AddedAt": "2024-09-01T09:55:15.6520741Z"
-  },
-  {
-    "Title": "The Last Journey - Die letzte Reise der Menschheit",
-    "Link": "https://www.zdf.de/filme/spielfilm-highlights/the-last-journey---die-letzte-reise-der-menschheit-100.html",
-    "Description": "Science-Fiction-Drama von Regisseur Romain Quirot",
-    "AddedAt": "2024-09-01T09:55:15.6520741Z"
-  },
-  {
-    "Title": "Arctic",
-    "Link": "https://www.zdf.de/filme/spielfilm-highlights/arctic-100.html",
-    "Description": "Der Kampf Mensch gegen Natur in seiner extremsten Form",
-    "AddedAt": "2024-09-01T09:55:15.6520741Z"
-  },
-  {
-    "Title": "Walhalla - Die Legende von Thor",
-    "Link": "https://www.zdf.de/filme/spielfilm-highlights/walhalla---die-legende-von-thor-100.html",
-    "Description": "Fantasy-Abenteuer für Fans der nordischen Mythologie",
-    "AddedAt": "2024-09-01T09:55:15.6520741Z"
-  },
-  {
-    "Title": "Hell",
-    "Link": "https://www.zdf.de/filme/spielfilm-highlights/hell-100.html",
-    "Description": "Dystopischer Horror-Thriller von Tim Fehlbaum",
-    "AddedAt": "2024-09-01T09:55:15.6520741Z"
-  },
-  {
-    "Title": "Die Königin des Nordens",
-    "Link": "https://www.zdf.de/filme/spielfilm-highlights/die-koenigin-des-nordens-100.html",
-    "Description": "Abenteuer-Epos über Margarethe I. mit Trine Dyrholm",
-    "AddedAt": "2024-09-01T09:55:15.6520741Z"
-  },
-  {
-    "Title": "Ich weiß, was du letzten Sommer getan hast",
-    "Link": "https://www.zdf.de/filme/spielfilme/ich-weiss-was-du-letzten-sommer-getan-hast-104.html",
-    "Description": "Teenie-Horror mit Gänsehautgarantie bis zum Ende",
-    "AddedAt": "2024-09-01T09:55:15.6520741Z"
-  },
-  {
-    "Title": "Die letzte Nacht in Mailand",
-    "Link": "https://www.zdf.de/filme/spielfilm-highlights/die-letzte-nacht-in-mailand-100.html",
-    "Description": "Italienischer Polizeithriller mit Pierfrancesco Favino",
-    "AddedAt": "2024-09-01T09:55:15.6520741Z"
-  },
-  {
-    "Title": "Jussi Adler-Olsen",
-    "Link": "https://www.zdf.de/filme/jussi-adler-olsen",
-    "Description": "Die Bestseller-Verfilmungen nach den Romanen von Jussi Adler-Olsen",
-    "AddedAt": "2024-09-01T09:55:15.6520741Z"
-  },
-  {
-    "Title": "Die Yacht",
-    "Link": "https://www.zdf.de/filme/spielfilm-highlights/die-yacht-100.html",
-    "Description": "Packender Survivalthriller mit sehenswerten Schauplätzen",
-    "AddedAt": "2024-09-01T09:55:15.6520741Z"
-  },
-  {
-    "Title": "Baztan-Trilogie",
-    "Link": "https://www.zdf.de/filme/baztan-trilogie",
-    "Description": "Die packenden Verfilmungen der spanischen Bestseller",
-    "AddedAt": "2024-09-01T09:55:15.6520741Z"
-  },
-  {
-    "Title": "Alibi.com 2",
-    "Link": "https://www.zdf.de/filme/spielfilm-highlights/alibicom-2-100.html",
-    "Description": "Fortsetzung mit noch mehr Tempo und noch mehr Witz",
-    "AddedAt": "2024-09-01T09:55:15.6520741Z"
-  },
-  {
-    "Title": "Black Box - Gefährliche Wahrheit",
-    "Link": "https://www.zdf.de/filme/spielfilm-highlights/black-box---gefaehrliche-wahrheit-100.html",
-    "Description": "Französischer Thriller um einen mysteriösen Flugzeugabsturz",
-    "AddedAt": "2024-09-01T09:55:15.6520741Z"
-  },
-  {
-    "Title": "Paradise Highway - Straße der Angst",
-    "Link": "https://www.zdf.de/filme/spielfilm-highlights/paradise-highway---strasse-der-angst-100.html",
-    "Description": "Stark besetzter Thriller über skrupellosen Menschenhandel",
-    "AddedAt": "2024-09-01T09:55:15.6520741Z"
-  },
-  {
-    "Title": "Halt nicht an!",
-    "Link": "https://www.zdf.de/filme/spielfilm-highlights/halt-nicht-an-102.html",
-    "Description": "Ein harmloser Familienausflug wird zum Überlebenskampf",
-    "AddedAt": "2024-09-01T09:55:15.6520741Z"
-  },
-  {
     "Title": "Die Spur der Knochen",
     "Link": "https://www.zdf.de/filme/spielfilm-highlights/die-spur-der-knochen-100.html",
     "Description": "Atmosphärischer spanischer Thriller mit Álvaro Morte",
-    "AddedAt": "2024-09-01T09:55:15.6520741Z"
-  },
-  {
-    "Title": "Jeder gegen Jeden",
-    "Link": "https://www.zdf.de/filme/spielfilm-highlights/jeder-gegen-jeden-100.html",
-    "Description": "Heist-Movie mit verblüffenden Handlungswendungen",
-    "AddedAt": "2024-09-01T09:55:15.6520741Z"
-  },
-  {
-    "Title": "Die Känguru-Chroniken",
-    "Link": "https://www.zdf.de/filme/spielfilm-highlights/die-kaenguru-chroniken-102.html",
-    "Description": "Verfilmung der beliebten (Hör-)Bücher von Marc-Uwe Kling",
     "AddedAt": "2024-09-01T09:55:15.6520741Z"
   },
   {

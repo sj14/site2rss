@@ -96,7 +96,8 @@ func main() {
 var state = map[string]string{}
 
 func updateCache(site Site, cachePath string) {
-	resp, err := http.Get(site.URL)
+	client := http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Get(site.URL)
 	if err != nil {
 		log.Panicln(err)
 	}
