@@ -2,21 +2,26 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"flag"
 	"html"
 	"io"
 	"log"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"os"
+	"os/signal"
 	"path/filepath"
 	"slices"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/gorilla/feeds"
 	"github.com/pelletier/go-toml/v2"
+	"golang.org/x/sync/errgroup"
 )
 
 type Config struct {
@@ -87,10 +92,40 @@ func main() {
 		})
 	}
 
-	err = http.ListenAndServe(*addr, nil)
-	if err != nil {
-		log.Fatal(err)
+	srv := http.Server{
+		Addr: *addr,
 	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+
+	go func() {
+		c := make(chan os.Signal, 1)
+		signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+
+		<-c
+		cancel()
+	}()
+
+	g, ctx := errgroup.WithContext(ctx)
+
+	g.Go(func() error {
+		slog.Info("listening", "addr", *addr)
+		return srv.ListenAndServe()
+	})
+
+	g.Go(func() error {
+		<-ctx.Done()
+		slog.Info("shutting down")
+		ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+		defer cancel()
+		return srv.Shutdown(ctx)
+	})
+
+	if err := g.Wait(); err != nil {
+		slog.Info("exit", "reason", err)
+	}
+
+	slog.Info("shut down")
 }
 
 var state = map[string]string{}

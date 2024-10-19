@@ -1,21 +1,105 @@
 [
   {
-    "Title": "Das Tal der geheimen Gräber",
-    "Link": "https://www.zdf.de/filme/baztan-trilogie/das-tal-der-geheimen-graeber-102.html",
-    "Description": "Der packende dritte Teil der Baztan-Trilogie",
-    "AddedAt": "2024-09-23T14:51:37.439118Z"
+    "Title": "Gottschalk und Krüger",
+    "Link": "https://www.zdf.de/filme/gottschalk-und-krueger",
+    "Description": "Kultkomödien mit Thomas Gottschalk und Mike Krüger",
+    "AddedAt": "2024-10-19T07:34:05.624345Z"
+  },
+  {
+    "Title": "Karl May",
+    "Link": "https://www.zdf.de/filme/karl-may",
+    "Description": "Spannende Abenteuerfilme mit unvergesslichen Helden",
+    "AddedAt": "2024-10-19T07:34:05.624333Z"
+  },
+  {
+    "Title": "Ruf der Wildnis",
+    "Link": "https://www.zdf.de/filme/spielfilme/ruf-der-wildnis-108.html",
+    "Description": "Romanverfilmung mit Charlton Heston und Raimund Harmstorf",
+    "AddedAt": "2024-10-19T07:34:05.6243Z"
+  },
+  {
+    "Title": "Hell",
+    "Link": "https://www.zdf.de/filme/spielfilm-highlights/hell-100.html",
+    "Description": "Dystopischer Horror-Thriller von Regisseur Tim Fehlbaum",
+    "AddedAt": "2024-10-19T07:34:05.624296Z"
+  },
+  {
+    "Title": "Shalako",
+    "Link": "https://www.zdf.de/filme/spielfilme/shalako-100.html",
+    "Description": "Mit Sean Connery und Brigitte Bardot starbesetzter Western",
+    "AddedAt": "2024-10-19T07:34:05.624281Z"
+  },
+  {
+    "Title": "The Informer - Wettlauf gegen die Zeit",
+    "Link": "https://www.zdf.de/filme/spielfilm-highlights/the-informer---wettlauf-gegen-die-zeit-100.html",
+    "Description": "Packender Thriller mit Joel Kinnaman und Rosamund Pike",
+    "AddedAt": "2024-10-19T07:34:05.624276Z"
+  },
+  {
+    "Title": "OSS 117",
+    "Link": "https://www.zdf.de/filme/oss-117",
+    "Description": "Action-Komödien mit Frankreichs Antwort auf James Bond",
+    "AddedAt": "2024-10-19T07:34:05.62427Z"
+  },
+  {
+    "Title": "Dark Windows",
+    "Link": "https://www.zdf.de/filme/spielfilm-highlights/dark-windows-100.html",
+    "Description": "Norwegischer Horrorthriller mit einem internationalen Cast",
+    "AddedAt": "2024-10-19T07:34:05.624264Z"
+  },
+  {
+    "Title": "Tod in den Wäldern",
+    "Link": "https://www.zdf.de/filme/spielfilm-highlights/tod-in-den-waeldern-102.html",
+    "Description": "Geradlinig erzählter Thriller mit Nikolaj Coster-Waldau",
+    "AddedAt": "2024-10-19T07:34:05.62426Z"
+  },
+  {
+    "Title": "Anna und die Apokalypse",
+    "Link": "https://www.zdf.de/filme/spielfilm-highlights/anna-und-die-apokalypse-100.html",
+    "Description": "Wunderbar verrücktes Zombie-Musical mit tollem Soundtrack",
+    "AddedAt": "2024-10-19T07:34:05.624254Z"
+  },
+  {
+    "Title": "Vertrauter Feind",
+    "Link": "https://www.zdf.de/filme/spielfilme/vertrauter-feind-100.html",
+    "Description": "Nervenaufreibender Thriller mit Harrison Ford und Brad Pitt",
+    "AddedAt": "2024-10-19T07:34:05.624248Z"
+  },
+  {
+    "Title": "Good Bye, Lenin!",
+    "Link": "https://www.zdf.de/3sat/spielfilm/good-bye-lenin-104.html",
+    "Description": "Die kultige Komödie mit Daniel Brühl und Katrin Sass",
+    "AddedAt": "2024-10-19T07:34:05.624243Z"
+  },
+  {
+    "Title": "Largo Winch: Die Burma Verschwörung",
+    "Link": "https://www.zdf.de/filme/spielfilm-highlights/largo-winch-die-burma-verschwoerung-106.html",
+    "Description": "Starbesetzter Mix aus Exotik, Romantik und Action",
+    "AddedAt": "2024-10-19T07:34:05.624238Z"
+  },
+  {
+    "Title": "Largo Winch - Tödliches Erbe",
+    "Link": "https://www.zdf.de/filme/spielfilm-highlights/largo-winch---toedliches-erbe-100.html",
+    "Description": "Temporeiches Action-Abenteuer mit Tomer Sisley",
+    "AddedAt": "2024-10-19T07:34:05.624231Z"
+  },
+  {
+    "Title": "Lake Placid",
+    "Link": "https://www.zdf.de/filme/spielfilme/lake-placid-102.html",
+    "Description": "Horrorkomödie mit Bill Pullman und Bridget Fonda",
+    "AddedAt": "2024-10-19T07:34:05.624223Z"
+  },
+  {
+    "Title": "Zur Startseite",
+    "Link": "https://www.zdf.de/",
+    "Description": "Temporeicher Actionthriller mit Sam Worthington",
+    "AddedAt": "2024-10-19T07:34:05.624214Z"
   },
   {
     "Title": "Erwartung",
     "Link": "https://www.zdf.de/filme/jussi-adler-olsen/jussi-adler-olsen-erwartung-100.html",
     "Description": "Der neueste Fall von Kommissar Mørck und Assad",
     "AddedAt": "2024-09-23T14:51:37.439108Z"
-  },
-  {
-    "Title": "Todesfalle Nordsee",
-    "Link": "https://www.zdf.de/filme/spielfilm-highlights/todesfalle-nordsee-102.html",
-    "Description": "Packender Katastrophen-Thriller aus Norwegen",
-    "AddedAt": "2024-09-23T14:51:37.439093Z"
   },
   {
     "Title": "Sorry We Missed You",
@@ -30,124 +114,16 @@
     "AddedAt": "2024-09-23T14:51:37.439057Z"
   },
   {
-    "Title": "Fear Dot Com",
-    "Link": "https://www.zdf.de/filme/spielfilm-highlights/fear-dot-com-100.html",
-    "Description": "Mystery-Thriller mit Stephen Dorff und Natascha McElhone",
-    "AddedAt": "2024-09-23T14:51:37.439052Z"
-  },
-  {
-    "Title": "Geisterfjord",
-    "Link": "https://www.zdf.de/filme/spielfilm-highlights/geisterfjord-100.html",
-    "Description": "Atmosphärisches Mystery-Drama aus Island",
-    "AddedAt": "2024-09-23T14:51:37.439042Z"
-  },
-  {
-    "Title": "Tides - Kampf um die Zukunft",
-    "Link": "https://www.zdf.de/filme/spielfilm-highlights/tides---kampf-um-die-zukunft-100.html",
-    "Description": "Dystopische Zukunftsvision von Regisseur Tim Fehlbaum",
-    "AddedAt": "2024-09-23T14:51:37.439012Z"
-  },
-  {
-    "Title": "The Northman",
-    "Link": "https://www.zdf.de/filme/spielfilm-highlights/the-northman-100.html",
-    "Description": "Wikinger-Saga mit internationaler Starbesetzung",
-    "AddedAt": "2024-09-23T14:51:37.439006Z"
-  },
-  {
-    "Title": "Heartbeast",
-    "Link": "https://www.zdf.de/filme/spielfilm-highlights/heartbeast-100.html",
-    "Description": "Dramatische und gefühlvolle Coming-of-Age-Geschichte",
-    "AddedAt": "2024-09-23T14:51:37.439001Z"
-  },
-  {
-    "Title": "Fall",
-    "Link": "https://www.zdf.de/filme/spielfilm-highlights/fall-112.html",
-    "Description": "Atemberaubend spannendes Survivalabenteuer",
-    "AddedAt": "2024-09-23T14:51:37.438995Z"
-  },
-  {
-    "Title": "Das Netz",
-    "Link": "https://www.zdf.de/filme/spielfilm-highlights/das-netz-108.html",
-    "Description": "Noch immer aktueller Cyber-Thriller mit Sandra Bullock",
-    "AddedAt": "2024-09-23T14:51:37.438991Z"
-  },
-  {
     "Title": "Countdown in Madrid",
     "Link": "https://www.zdf.de/filme/spielfilm-highlights/countdown-in-madrid-102.html",
     "Description": "Spanisch-französischer Heist-Thriller mit Topbesetzung",
     "AddedAt": "2024-09-23T14:51:37.438984Z"
   },
   {
-    "Title": "Verführung einer Fremden",
-    "Link": "https://www.zdf.de/filme/spielfilme/verfuehrung-einer-fremden-100.html",
-    "Description": "Wendungsreicher Thriller mit Halle Berry und Bruce Willis",
-    "AddedAt": "2024-09-23T14:51:37.438977Z"
-  },
-  {
     "Title": "The Locksmith - Der Spezialist",
     "Link": "https://www.zdf.de/filme/spielfilm-highlights/the-locksmith---der-spezialist-100.html",
     "Description": "Thriller-Drama mit Ryan Phillippe und Kate Bosworth",
     "AddedAt": "2024-09-23T14:51:37.438964Z"
-  },
-  {
-    "Title": "A Breath Away",
-    "Link": "https://www.zdf.de/filme/spielfilm-highlights/a-breath-away-100.html",
-    "Description": "Katastrophendrama mit Romain Duris und Olga Kurylenko",
-    "AddedAt": "2024-09-01T09:55:15.6520741Z"
-  },
-  {
-    "Title": "Hell",
-    "Link": "https://www.zdf.de/filme/spielfilm-highlights/hell-100.html",
-    "Description": "Dystopischer Horror-Thriller von Tim Fehlbaum",
-    "AddedAt": "2024-09-01T09:55:15.6520741Z"
-  },
-  {
-    "Title": "The Last Journey - Die letzte Reise der Menschheit",
-    "Link": "https://www.zdf.de/filme/spielfilm-highlights/the-last-journey---die-letzte-reise-der-menschheit-100.html",
-    "Description": "Science-Fiction-Drama von Regisseur Romain Quirot",
-    "AddedAt": "2024-09-01T09:55:15.6520741Z"
-  },
-  {
-    "Title": "Walhalla - Die Legende von Thor",
-    "Link": "https://www.zdf.de/filme/spielfilm-highlights/walhalla---die-legende-von-thor-100.html",
-    "Description": "Fantasy-Abenteuer für Fans der nordischen Mythologie",
-    "AddedAt": "2024-09-01T09:55:15.6520741Z"
-  },
-  {
-    "Title": "Arctic",
-    "Link": "https://www.zdf.de/filme/spielfilm-highlights/arctic-100.html",
-    "Description": "Der Kampf Mensch gegen Natur in seiner extremsten Form",
-    "AddedAt": "2024-09-01T09:55:15.6520741Z"
-  },
-  {
-    "Title": "Die Königin des Nordens",
-    "Link": "https://www.zdf.de/filme/spielfilm-highlights/die-koenigin-des-nordens-100.html",
-    "Description": "Abenteuer-Epos über Margarethe I. mit Trine Dyrholm",
-    "AddedAt": "2024-09-01T09:55:15.6520741Z"
-  },
-  {
-    "Title": "Papillon",
-    "Link": "https://www.zdf.de/filme/spielfilm-highlights/papillon-100.html",
-    "Description": "Charlie Hunnam und Rami Malek im Remake des Klassikers",
-    "AddedAt": "2024-09-01T09:55:15.6520741Z"
-  },
-  {
-    "Title": "Beckenrand Sheriff",
-    "Link": "https://www.zdf.de/filme/spielfilm-highlights/beckenrand-sheriff-100.html",
-    "Description": "Sommerkomödie mit deutscher Starbesetzung",
-    "AddedAt": "2024-09-01T09:55:15.6520741Z"
-  },
-  {
-    "Title": "Lügen sterben nie",
-    "Link": "https://www.zdf.de/filme/spielfilm-highlights/luegen-sterben-nie-100.html",
-    "Description": "Temporeicher Thriller mit Actionstar Scott Adkins",
-    "AddedAt": "2024-09-01T09:55:15.6520741Z"
-  },
-  {
-    "Title": "OSS 117",
-    "Link": "https://www.zdf.de/filme/oss-117",
-    "Description": "Action-Komödien: Frankreichs Antwort auf James Bond",
-    "AddedAt": "2024-09-01T09:55:15.6520741Z"
   },
   {
     "Title": "Die Spur der Knochen",
