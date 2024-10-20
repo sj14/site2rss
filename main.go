@@ -164,7 +164,7 @@ func updateCache(site Site, cachePath string) {
 		}
 
 		linkRaw, _, found = strings.Cut(linkRaw, site.LinkEnd)
-		if !found {
+		if !found || linkRaw == "" || linkRaw == "/" {
 			continue
 		}
 

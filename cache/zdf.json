@@ -1,5 +1,17 @@
 [
   {
+    "Title": "Die Stunde des Killers",
+    "Link": "https://www.zdf.de/filme/spielfilm-highlights/die-stunde-des-killers-102.html",
+    "Description": "Temporeicher Actionthriller mit Sam Worthington",
+    "AddedAt": "2024-10-20T07:59:36.082568Z"
+  },
+  {
+    "Title": "Julie \u0026amp; Julia",
+    "Link": "https://www.zdf.de/filme/spielfilme/julie--julia-100.html",
+    "Description": "Kulinarische Komödie mit Meryl Streep und Amy Adams",
+    "AddedAt": "2024-10-20T07:59:36.08256Z"
+  },
+  {
     "Title": "Gottschalk und Krüger",
     "Link": "https://www.zdf.de/filme/gottschalk-und-krueger",
     "Description": "Kultkomödien mit Thomas Gottschalk und Mike Krüger",
@@ -60,12 +72,6 @@
     "AddedAt": "2024-10-19T07:34:05.624254Z"
   },
   {
-    "Title": "Vertrauter Feind",
-    "Link": "https://www.zdf.de/filme/spielfilme/vertrauter-feind-100.html",
-    "Description": "Nervenaufreibender Thriller mit Harrison Ford und Brad Pitt",
-    "AddedAt": "2024-10-19T07:34:05.624248Z"
-  },
-  {
     "Title": "Good Bye, Lenin!",
     "Link": "https://www.zdf.de/3sat/spielfilm/good-bye-lenin-104.html",
     "Description": "Die kultige Komödie mit Daniel Brühl und Katrin Sass",
@@ -88,12 +94,6 @@
     "Link": "https://www.zdf.de/filme/spielfilme/lake-placid-102.html",
     "Description": "Horrorkomödie mit Bill Pullman und Bridget Fonda",
     "AddedAt": "2024-10-19T07:34:05.624223Z"
-  },
-  {
-    "Title": "Zur Startseite",
-    "Link": "https://www.zdf.de/",
-    "Description": "Temporeicher Actionthriller mit Sam Worthington",
-    "AddedAt": "2024-10-19T07:34:05.624214Z"
   },
   {
     "Title": "Erwartung",
