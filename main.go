@@ -205,7 +205,7 @@ func updateCache(site Site, cachePath string) {
 
 		items = append(items, Item{
 			Link:        link,
-			Title:       strings.TrimSpace(titleRaw),
+			Title:       strings.TrimSpace(html.UnescapeString(titleRaw)),
 			Description: strings.TrimSpace(html.UnescapeString(descriptionRaw)),
 			AddedAt:     time.Now().UTC(),
 		})
