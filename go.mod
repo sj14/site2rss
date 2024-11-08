@@ -5,5 +5,5 @@ go 1.23.2
 require (
 	github.com/gorilla/feeds v1.2.0
 	github.com/pelletier/go-toml/v2 v2.2.3
-	golang.org/x/sync v0.8.0
+	golang.org/x/sync v0.9.0
 )
