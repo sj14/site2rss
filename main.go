@@ -244,6 +244,12 @@ func updateCache(site Site, cachePath string) {
 		return 1
 	})
 
+	items = slices.Compact(items)
+
+	for _, item := range items {
+		slog.Info("found", "title", item.Title, "description", item.Description, "link", item.Link)
+	}
+
 	b, err := json.MarshalIndent(items, "", "  ")
 	if err != nil {
 		log.Fatal(err)
