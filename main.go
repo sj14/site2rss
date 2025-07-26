@@ -235,7 +235,7 @@ func updateCache(site Site, cachePath string) {
 	}
 
 	slices.SortStableFunc(items, func(a, b Item) int {
-		if a.AddedAt == b.AddedAt {
+		if a.AddedAt.Equal(b.AddedAt) {
 			return 0
 		}
 		if a.AddedAt.UnixNano() > b.AddedAt.UnixNano() {
