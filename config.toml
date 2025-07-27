@@ -1,4 +1,18 @@
 [[Sites]]
+Name = "ARD"
+URL = "https://www.ardmediathek.de/filme"
+Title = "Die besten Filme in der ARD"
+SiteDescription = "Die Filme der ARD im Überblick: Von Krimis, Komödien, Arthouse- und Liebesfilmen bis zu Märchen und spannenden Debütfilmen."
+ItemStart = "b1e83sjn"
+ItemEnd = "</a></div>"
+LinkStart = "href=\""
+LinkEnd = "\""
+TitleStart = "<h3 class=\"b1ja19fa h1oki4ga\">"
+TitleEnd = "</h3>"
+DescriptionStart = ""
+DescriptionEnd = ""
+
+[[Sites]]
 Name = "ZDF"
 URL = "https://www.zdf.de/spielfilm-highlights-104"
 Title = "ZDF Spielfilm-Highlights"

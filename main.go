@@ -243,7 +243,7 @@ func updateCache(site Site, cachePath string) {
 	items = slices.Compact(items)
 
 	for _, item := range items {
-		slog.Info("found", "title", item.Title, "description", item.Description, "link", item.Link)
+		slog.Info("found", "site", site.Name, "title", item.Title, "description", item.Description, "link", item.Link)
 	}
 
 	b, err := json.MarshalIndent(items, "", "  ")
