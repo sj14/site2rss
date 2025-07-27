@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"flag"
 	"html"
-	"io"
 	"log"
 	"log/slog"
 	"net/http"
@@ -20,6 +19,7 @@ import (
 	"time"
 
 	"github.com/gorilla/feeds"
+	"github.com/gost-dom/browser"
 	"github.com/pelletier/go-toml/v2"
 	"golang.org/x/sync/errgroup"
 )
@@ -131,19 +131,15 @@ func main() {
 var state = map[string]string{}
 
 func updateCache(site Site, cachePath string) {
-	client := http.Client{Timeout: 10 * time.Second}
-	resp, err := client.Get(site.URL)
-	if err != nil {
-		log.Panicln(err)
-	}
-	defer resp.Body.Close()
+	br := browser.New()
 
-	body, err := io.ReadAll(resp.Body)
+	window, err := br.Open(site.URL)
 	if err != nil {
-		log.Panicln(err)
+		slog.Error("loading site", "err", err)
+		return
 	}
 
-	rest := string(body)
+	rest := window.Document().Body().InnerHTML()
 
 	var items []Item
 	for {

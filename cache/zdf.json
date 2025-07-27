@@ -1,5 +1,11 @@
 [
   {
+    "Title": "Verblendung",
+    "Link": "https://www.zdf.de/filme/verblendung-movie-100",
+    "Description": "",
+    "AddedAt": "2025-07-27T13:33:26.214815Z"
+  },
+  {
     "Title": "Basic Instinct 2",
     "Link": "https://www.zdf.de/filme/basic-instinct-2-movie-100",
     "Description": "",
@@ -10,12 +16,6 @@
     "Link": "https://www.zdf.de/filme/eine-nacht-in-rom-movie-100",
     "Description": "",
     "AddedAt": "2025-07-26T12:25:14.126015Z"
-  },
-  {
-    "Title": "Passion Simple",
-    "Link": "https://www.zdf.de/filme/passion-simple-movie-100",
-    "Description": "",
-    "AddedAt": "2025-07-26T12:25:14.126008Z"
   },
   {
     "Title": "Napola - Elite für den Führer",
@@ -136,12 +136,6 @@
     "Link": "https://www.zdf.de/filme/dead-for-a-dollar-movie-100",
     "Description": "",
     "AddedAt": "2025-07-26T12:25:14.125871Z"
-  },
-  {
-    "Title": "District 9",
-    "Link": "https://www.zdf.de/filme/district-9-movie-100",
-    "Description": "",
-    "AddedAt": "2025-07-26T12:25:14.125862Z"
   },
   {
     "Title": "Retribution - Vergeltung",
