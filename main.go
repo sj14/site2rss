@@ -73,9 +73,16 @@ func main() {
 
 	go func() {
 		for {
+			updates := make(map[string]uint64, len(config.Sites))
+
 			for _, site := range config.Sites {
-				updateCache(site, *cachePath)
+				updates[site.Name] = updateCache(site, *cachePath)
 			}
+
+			for site, updated := range updates {
+				slog.Info("updates", site, updated)
+			}
+
 			time.Sleep(*updateInterval)
 		}
 	}()
@@ -130,13 +137,13 @@ func main() {
 
 var state = map[string]string{}
 
-func updateCache(site Site, cachePath string) {
+func updateCache(site Site, cachePath string) uint64 {
 	br := browser.New()
 
 	window, err := br.Open(site.URL)
 	if err != nil {
 		slog.Error("loading site", "err", err)
-		return
+		return 0
 	}
 
 	rest := window.Document().Body().InnerHTML()
@@ -292,4 +299,6 @@ func updateCache(site Site, cachePath string) {
 	}
 
 	state[strings.ToLower(site.Name)+"_json"] = json
+
+	return uint64(len(items))
 }
