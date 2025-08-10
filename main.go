@@ -14,6 +14,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"strings"
 	"syscall"
@@ -177,22 +178,32 @@ func updateCache(site Site, cachePath string) uint64 {
 			continue
 		}
 
-		_, titleRaw, found := strings.Cut(itemRaw, site.TitleStart)
+		regTitleStart := regexp.MustCompile(site.TitleStart).FindString(itemRaw)
+		if regTitleStart == "" {
+			continue
+		}
+
+		_, titleRaw, found := strings.Cut(itemRaw, regTitleStart)
 		if !found {
 			continue
 		}
 
-		titleRaw, _, found = strings.Cut(titleRaw, site.TitleEnd)
+		regTitleEnd := regexp.MustCompile(site.TitleEnd).FindString(titleRaw)
+		if regTitleEnd == "" {
+			continue
+		}
+
+		titleRaw, _, found = strings.Cut(titleRaw, regTitleEnd)
 		if !found {
 			continue
 		}
 
-		_, descriptionRaw, found := strings.Cut(itemRaw, site.DescriptionStart)
+		_, descriptionRaw, found := strings.Cut(itemRaw, regexp.MustCompile(site.DescriptionStart).FindString(itemRaw))
 		if !found {
 			continue
 		}
 
-		descriptionRaw, _, found = strings.Cut(descriptionRaw, site.DescriptionEnd)
+		descriptionRaw, _, found = strings.Cut(descriptionRaw, regexp.MustCompile(site.DescriptionEnd).FindString(descriptionRaw))
 		if !found {
 			continue
 		}
