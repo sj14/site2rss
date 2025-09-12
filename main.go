@@ -22,28 +22,28 @@ import (
 	"time"
 
 	"github.com/VictoriaMetrics/metrics"
+	"github.com/goccy/go-yaml"
 	"github.com/gorilla/feeds"
-	"github.com/pelletier/go-toml/v2"
 	"golang.org/x/sync/errgroup"
 )
 
 type Config struct {
-	Sites []Site
+	Sites []Site `yaml:"sites"`
 }
 
 type Site struct {
-	Name             string
-	Title            string
-	SiteDescription  string
-	URL              string
-	ItemStart        string
-	ItemEnd          string
-	LinkStart        string
-	LinkEnd          string
-	TitleStart       string
-	TitleEnd         string
-	DescriptionStart string
-	DescriptionEnd   string
+	Name             string `yaml:"name"`
+	Title            string `yaml:"title"`
+	SiteDescription  string `yaml:"siteDescription"`
+	URL              string `yaml:"url"`
+	ItemStart        string `yaml:"itemStart"`
+	ItemEnd          string `yaml:"itemEnd"`
+	LinkStart        string `yaml:"linkStart"`
+	LinkEnd          string `yaml:"linkEnd"`
+	TitleStart       string `yaml:"titleStart"`
+	TitleEnd         string `yaml:"titleEnd"`
+	DescriptionStart string `yaml:"descriptionStart"`
+	DescriptionEnd   string `yaml:"descriptionEnd"`
 }
 
 type Item struct {
@@ -73,7 +73,7 @@ func lookupEnvDuration(key string, defaultVal time.Duration) time.Duration {
 
 func main() {
 	var (
-		configPath     = flag.String("config", lookupEnvString("CONFIG", "config.toml"), "path to the config file")
+		configPath     = flag.String("config", lookupEnvString("CONFIG", "config.yaml"), "path to the config file")
 		cachePath      = flag.String("cache", lookupEnvString("CACHE", "cache"), "path to the cache dir")
 		updateInterval = flag.Duration("interval", lookupEnvDuration("INTERVAL", 1*time.Hour), "update interval")
 		addr           = flag.String("listen", lookupEnvString("LISTEN", ":8080"), "listen address")
@@ -86,8 +86,9 @@ func main() {
 	}
 
 	var config Config
-	decoder := toml.NewDecoder(bytes.NewReader(confBytes))
-	err = decoder.DisallowUnknownFields().Decode(&config)
+	decoder := yaml.NewDecoder(bytes.NewReader(confBytes), yaml.DisallowUnknownField())
+
+	err = decoder.Decode(&config)
 	if err != nil {
 		log.Fatalln(err)
 	}

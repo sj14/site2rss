@@ -4,8 +4,8 @@ go 1.24.4
 
 require (
 	github.com/VictoriaMetrics/metrics v1.40.1
+	github.com/goccy/go-yaml v1.18.0
 	github.com/gorilla/feeds v1.2.0
-	github.com/pelletier/go-toml/v2 v2.2.4
 	golang.org/x/sync v0.17.0
 )
 
