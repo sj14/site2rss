@@ -51,12 +51,30 @@ type Item struct {
 	AddedAt     time.Time
 }
 
+func lookupEnvString(key string, defaultVal string) string {
+	if val, ok := os.LookupEnv(key); ok {
+		return val
+	}
+	return defaultVal
+}
+
+func lookupEnvDuration(key string, defaultVal time.Duration) time.Duration {
+	if val, ok := os.LookupEnv(key); ok {
+		duration, err := time.ParseDuration(val)
+		if err != nil {
+			log.Fatalf("failed parsing %q as duration (%q): %v", val, key, err)
+		}
+		return time.Duration(duration)
+	}
+	return defaultVal
+}
+
 func main() {
 	var (
-		configPath     = flag.String("config", "config.toml", "path to the config file")
-		cachePath      = flag.String("cache", "cache", "path to the cache dir")
-		updateInterval = flag.Duration("interval", 1*time.Hour, "update interval")
-		addr           = flag.String("address", ":8080", "listen address")
+		configPath     = flag.String("config", lookupEnvString("CONFIG", "config.toml"), "path to the config file")
+		cachePath      = flag.String("cache", lookupEnvString("CACHE", "cache"), "path to the cache dir")
+		updateInterval = flag.Duration("interval", lookupEnvDuration("INTERVAL", 1*time.Hour), "update interval")
+		addr           = flag.String("listen", lookupEnvString("LISTEN", ":8080"), "listen address")
 	)
 	flag.Parse()
 
