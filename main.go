@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"flag"
+	"fmt"
 	"html"
 	"io"
 	"log"
@@ -20,6 +21,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/VictoriaMetrics/metrics"
 	"github.com/gorilla/feeds"
 	"github.com/pelletier/go-toml/v2"
 	"golang.org/x/sync/errgroup"
@@ -95,7 +97,13 @@ func main() {
 			updates := make(map[string]uint64, len(config.Sites))
 
 			for _, site := range config.Sites {
-				updates[site.Name] = updateCache(site, *cachePath)
+				count := updateCache(site, *cachePath)
+
+				updates[site.Name] = count
+				if itemSizesMetrics[site.Name] == nil {
+					itemSizesMetrics[site.Name] = metrics.NewGauge(fmt.Sprintf(`item_size{name="%s"}`, site.Name), nil)
+				}
+				itemSizesMetrics[site.Name].Set(float64(count))
 			}
 
 			for site, updated := range updates {
@@ -117,6 +125,10 @@ func main() {
 			w.Write([]byte(state[strings.ToLower(site.Name)+"_json"]))
 		})
 	}
+
+	http.HandleFunc("/metrics", func(w http.ResponseWriter, req *http.Request) {
+		metrics.WritePrometheus(w, true)
+	})
 
 	srv := http.Server{
 		Addr: *addr,
@@ -154,7 +166,10 @@ func main() {
 	slog.Info("shut down")
 }
 
-var state = map[string]string{}
+var (
+	itemSizesMetrics = map[string]*metrics.Gauge{}
+	state            = map[string]string{}
+)
 
 func updateCache(site Site, cachePath string) uint64 {
 	client := http.Client{Timeout: 10 * time.Second}
