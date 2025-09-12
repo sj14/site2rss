@@ -53,7 +53,7 @@ type Item struct {
 
 func main() {
 	var (
-		configPath     = flag.String("config", "config/config.toml", "path to the config file")
+		configPath     = flag.String("config", "config.toml", "path to the config file")
 		cachePath      = flag.String("cache", "cache", "path to the cache dir")
 		updateInterval = flag.Duration("interval", 1*time.Hour, "update interval")
 		addr           = flag.String("address", ":8080", "listen address")
@@ -157,13 +157,23 @@ func updateCache(site Site, cachePath string) uint64 {
 
 	var items []Item
 	for {
-		_, after, found := strings.Cut(rest, site.ItemStart)
+		regItemStart := regexp.MustCompile(site.ItemStart).FindString(rest)
+		if regItemStart == "" {
+			break
+		}
+
+		_, after, found := strings.Cut(rest, regItemStart)
 		if !found {
 			break
 		}
 
+		regItemEnd := regexp.MustCompile(site.ItemEnd).FindString(after)
+		if regItemEnd == "" {
+			break
+		}
+
 		var itemRaw string
-		itemRaw, rest, found = strings.Cut(after, site.ItemEnd)
+		itemRaw, rest, found = strings.Cut(after, regItemEnd)
 		if !found {
 			break
 		}
