@@ -7,7 +7,6 @@ import (
 	"flag"
 	"fmt"
 	"html"
-	"io"
 	"log"
 	"log/slog"
 	"net/http"
@@ -15,12 +14,12 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
-	"regexp"
 	"slices"
 	"strings"
 	"syscall"
 	"time"
 
+	"github.com/PuerkitoBio/goquery"
 	"github.com/VictoriaMetrics/metrics"
 	"github.com/goccy/go-yaml"
 	"github.com/gorilla/feeds"
@@ -32,18 +31,18 @@ type Config struct {
 }
 
 type Site struct {
-	Name             string `yaml:"name"`
-	Title            string `yaml:"title"`
-	SiteDescription  string `yaml:"siteDescription"`
-	URL              string `yaml:"url"`
-	ItemStart        string `yaml:"itemStart"`
-	ItemEnd          string `yaml:"itemEnd"`
-	LinkStart        string `yaml:"linkStart"`
-	LinkEnd          string `yaml:"linkEnd"`
-	TitleStart       string `yaml:"titleStart"`
-	TitleEnd         string `yaml:"titleEnd"`
-	DescriptionStart string `yaml:"descriptionStart"`
-	DescriptionEnd   string `yaml:"descriptionEnd"`
+	Name        string   `yaml:"name"`
+	Title       string   `yaml:"title"`
+	Description string   `yaml:"description"`
+	URL         string   `yaml:"url"`
+	Selector    Selector `yaml:"selector"`
+}
+
+type Selector struct {
+	Item        string `yaml:"item"`
+	Link        string `yaml:"link"`
+	Title       string `yaml:"title"`
+	Description string `yaml:"description"`
 }
 
 type Item struct {
@@ -98,7 +97,11 @@ func main() {
 			updates := make(map[string]uint64, len(config.Sites))
 
 			for _, site := range config.Sites {
-				count := updateCache(site, *cachePath)
+				count, err := updateCache(site, *cachePath)
+				if err != nil {
+					log.Println(err)
+					// do not continue the loop to update the metrics below
+				}
 
 				updates[site.Name] = count
 				if itemSizesMetrics[site.Name] == nil {
@@ -172,94 +175,42 @@ var (
 	state            = map[string]string{}
 )
 
-func updateCache(site Site, cachePath string) uint64 {
+func updateCache(site Site, cachePath string) (uint64, error) {
 	client := http.Client{Timeout: 10 * time.Second}
+
+	siteURL, err := url.Parse(site.URL)
+	if err != nil {
+		return 0, fmt.Errorf("failed to parse URL %q: %w", site.URL, err)
+	}
 
 	resp, err := client.Get(site.URL)
 	if err != nil {
-		log.Panicln(err)
-
+		return 0, fmt.Errorf("failed loading site (%q): %w", site.URL, err)
 	}
 	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Panicln(err)
+	if resp.StatusCode != http.StatusOK {
+		return 0, fmt.Errorf("non 200 status for %q", site.URL)
 	}
 
-	rest := string(body)
+	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	if err != nil {
+		return 0, fmt.Errorf("parse document: %w", err)
+	}
 
 	var items []Item
-	for {
-		regItemStart := regexp.MustCompile(site.ItemStart).FindString(rest)
-		if regItemStart == "" {
-			break
-		}
 
-		_, after, found := strings.Cut(rest, regItemStart)
-		if !found {
-			break
-		}
-
-		regItemEnd := regexp.MustCompile(site.ItemEnd).FindString(after)
-		if regItemEnd == "" {
-			break
-		}
-
-		var itemRaw string
-		itemRaw, rest, found = strings.Cut(after, regItemEnd)
-		if !found {
-			break
-		}
-
-		_, linkRaw, found := strings.Cut(itemRaw, site.LinkStart)
-		if !found {
-			break
-		}
-
-		linkRaw, _, found = strings.Cut(linkRaw, site.LinkEnd)
-		if !found || linkRaw == "" || linkRaw == "/" {
-			continue
-		}
-
-		regTitleStart := regexp.MustCompile(site.TitleStart).FindString(itemRaw)
-		if regTitleStart == "" {
-			continue
-		}
-
-		_, titleRaw, found := strings.Cut(itemRaw, regTitleStart)
-		if !found {
-			continue
-		}
-
-		regTitleEnd := regexp.MustCompile(site.TitleEnd).FindString(titleRaw)
-		if regTitleEnd == "" {
-			continue
-		}
-
-		titleRaw, _, found = strings.Cut(titleRaw, regTitleEnd)
-		if !found {
-			continue
-		}
-
-		_, descriptionRaw, found := strings.Cut(itemRaw, regexp.MustCompile(site.DescriptionStart).FindString(itemRaw))
-		if !found {
-			continue
-		}
-
-		descriptionRaw, _, found = strings.Cut(descriptionRaw, regexp.MustCompile(site.DescriptionEnd).FindString(descriptionRaw))
-		if !found {
-			continue
-		}
-
-		siteURL, err := url.Parse(site.URL)
-		if err != nil {
-			log.Fatal(err)
-		}
+	doc.Find(site.Selector.Item).Each(func(i int, s *goquery.Selection) {
+		var (
+			title       = getField(s, site.Selector.Title)
+			linkRaw     = getField(s, site.Selector.Link)
+			description = getField(s, site.Selector.Description)
+		)
 
 		link, err := url.JoinPath(siteURL.Host, linkRaw)
 		if err != nil {
-			log.Panicln()
+			log.Printf("failed to join URL: %v\n", err)
+			return
 		}
 
 		link = strings.TrimSpace(link)
@@ -267,13 +218,19 @@ func updateCache(site Site, cachePath string) uint64 {
 			link = "https://" + link
 		}
 
+		for _, item := range items {
+			if item.Link == link {
+				return
+			}
+		}
+
 		items = append(items, Item{
 			Link:        link,
-			Title:       strings.TrimSpace(html.UnescapeString(titleRaw)),
-			Description: strings.TrimSpace(html.UnescapeString(descriptionRaw)),
+			Title:       strings.TrimSpace(html.UnescapeString(title)),
+			Description: strings.TrimSpace(html.UnescapeString(description)),
 			AddedAt:     time.Now().UTC(),
 		})
-	}
+	})
 
 	var oldEntries []Item
 
@@ -327,7 +284,7 @@ func updateCache(site Site, cachePath string) uint64 {
 	feed := &feeds.Feed{
 		Title:       site.Title,
 		Link:        &feeds.Link{Href: site.URL},
-		Description: site.SiteDescription,
+		Description: site.Description,
 	}
 
 	for _, lt := range items {
@@ -361,5 +318,15 @@ func updateCache(site Site, cachePath string) uint64 {
 
 	state[strings.ToLower(site.Name)+"_json"] = json
 
-	return uint64(len(items))
+	return uint64(len(items)), nil
+}
+
+func getField(s *goquery.Selection, selector string) string {
+	parts := strings.SplitN(selector, "@", 2)
+	el := s.Find(parts[0])
+	if len(parts) == 2 {
+		val, _ := el.Attr(parts[1])
+		return val
+	}
+	return el.Text()
 }
