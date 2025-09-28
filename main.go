@@ -323,9 +323,9 @@ func updateCache(site Site, cachePath string) (uint64, error) {
 
 func getField(s *goquery.Selection, selector string) string {
 	parts := strings.SplitN(selector, "@", 2)
-	el := s.Find(parts[0])
+	el := s.Find(parts[len(parts)-1])
 	if len(parts) == 2 {
-		val, _ := el.Attr(parts[1])
+		val, _ := el.Attr(parts[len(parts)-2])
 		return val
 	}
 	return el.Text()

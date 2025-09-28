@@ -5,7 +5,7 @@ sites:
     description: "Die Filme der ARD im Überblick: Von Krimis, Komödien, Arthouse- und Liebesfilmen bis zu Märchen und spannenden Debütfilmen."
     selector:
       item: "div[itemType='https://schema.org/Movie']"
-      link: "a@href"
+      link: "href@a"
       title: "h3"
       description: ""
   - name: "ZDF"
@@ -14,6 +14,6 @@ sites:
     description: "Internationale Filme mit spannenden und emotionalen Geschichten. Ob Krimi, Drama, Komödie, Lovestory oder Thriller, für jeden Geschmack wird etwas geboten."
     selector:
       item: "div[data-testid='teaser-tile']"
-      link: "a@href"
+      link: "href@a"
       title: "h3"
       description: ""
