@@ -17,3 +17,12 @@ sites:
       link: "href@a"
       title: "h3"
       description: ""
+  - name: "Arte"
+    url: "https://www.arte.tv/de/videos/kino/filme/"
+    title: "Arte Kinofilme"
+    description: "Kultfilme, Autorenfilme, Stummfilme – Entdecken Sie die Vielfalt des ARTE-Filmangebots."
+    selector:
+      item: "div[data-testid='ts-tsItem']"
+      link: "href@a"
+      title: "h3"
+      description: ""
