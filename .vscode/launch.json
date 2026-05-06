@@ -10,7 +10,7 @@
             "request": "launch",
             "mode": "auto",
             "program": "${fileDirname}",
-            "args": ["-config", "config.toml"]
+            // "args": ["-config", "config.toml"]
         }
     ]
 }
