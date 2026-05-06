@@ -1,39 +1,237 @@
 [
   {
+    "Title": "Edgar Wallace: Der Zinker",
+    "Link": "https://www.zdf.de/filme/edgar-wallace-der-zinker-movie-100",
+    "Description": "",
+    "AddedAt": "2026-05-06T13:30:20.627133Z"
+  },
+  {
+    "Title": "Edgar Wallace: Das indische Tuch",
+    "Link": "https://www.zdf.de/filme/edgar-wallace-das-indische-tuch-movie-100",
+    "Description": "",
+    "AddedAt": "2026-05-06T13:30:20.627129Z"
+  },
+  {
+    "Title": "Desperado",
+    "Link": "https://www.zdf.de/filme/desperado-movie-100",
+    "Description": "",
+    "AddedAt": "2026-05-06T13:30:20.627121Z"
+  },
+  {
+    "Title": "El Mariachi",
+    "Link": "https://www.zdf.de/filme/el-mariachi-movie-100",
+    "Description": "",
+    "AddedAt": "2026-05-06T13:30:20.627118Z"
+  },
+  {
+    "Title": "Irgendwann in Mexico",
+    "Link": "https://www.zdf.de/filme/irgendwann-in-mexico-movie-100",
+    "Description": "",
+    "AddedAt": "2026-05-06T13:30:20.627112Z"
+  },
+  {
+    "Title": "Zwei Compañeros",
+    "Link": "https://www.zdf.de/filme/zwei-compaeros-movie-100",
+    "Description": "",
+    "AddedAt": "2026-05-06T13:30:20.627109Z"
+  },
+  {
+    "Title": "Rivalen unter roter Sonne",
+    "Link": "https://www.zdf.de/filme/rivalen-unter-roter-sonne-movie-100",
+    "Description": "",
+    "AddedAt": "2026-05-06T13:30:20.627105Z"
+  },
+  {
+    "Title": "Die Queen",
+    "Link": "https://www.zdf.de/filme/die-queen-movie-100",
+    "Description": "",
+    "AddedAt": "2026-05-06T13:30:20.627101Z"
+  },
+  {
+    "Title": "Klondike",
+    "Link": "https://www.zdf.de/filme/klondike-movie-100",
+    "Description": "",
+    "AddedAt": "2026-05-06T13:30:20.62709Z"
+  },
+  {
+    "Title": "Liebe auf 4 Pfoten",
+    "Link": "https://www.zdf.de/filme/liebe-auf-4-pfoten-movie-100",
+    "Description": "",
+    "AddedAt": "2026-05-06T13:30:20.627083Z"
+  },
+  {
+    "Title": "Fantomas bedroht die Welt",
+    "Link": "https://www.zdf.de/filme/fantomas-bedroht-die-welt-movie-100",
+    "Description": "",
+    "AddedAt": "2026-05-06T13:30:20.627079Z"
+  },
+  {
+    "Title": "Fantomas gegen Interpol",
+    "Link": "https://www.zdf.de/filme/fantomas-gegen-interpol-movie-100",
+    "Description": "",
+    "AddedAt": "2026-05-06T13:30:20.627076Z"
+  },
+  {
+    "Title": "Fantomas",
+    "Link": "https://www.zdf.de/filme/fantomas-movie-100",
+    "Description": "",
+    "AddedAt": "2026-05-06T13:30:20.627072Z"
+  },
+  {
+    "Title": "Zum Verwechseln ähnlich",
+    "Link": "https://www.zdf.de/filme/zum-verwechseln-aehnlich-movie-100",
+    "Description": "",
+    "AddedAt": "2026-05-06T13:30:20.627069Z"
+  },
+  {
+    "Title": "Spanglish",
+    "Link": "https://www.zdf.de/filme/spanglish-movie-100",
+    "Description": "",
+    "AddedAt": "2026-05-06T13:30:20.627065Z"
+  },
+  {
+    "Title": "Meine Stunden mit Leo",
+    "Link": "https://www.zdf.de/filme/meine-stunden-mit-leo-movie-100",
+    "Description": "",
+    "AddedAt": "2026-05-06T13:30:20.627062Z"
+  },
+  {
+    "Title": "Die Spur der Knochen",
+    "Link": "https://www.zdf.de/filme/die-spur-der-knochen-movie-100",
+    "Description": "",
+    "AddedAt": "2026-05-06T13:30:20.627054Z"
+  },
+  {
+    "Title": "Angriff aus der Tiefe",
+    "Link": "https://www.zdf.de/filme/angriff-aus-der-tiefe-movie-100",
+    "Description": "",
+    "AddedAt": "2026-05-06T13:30:20.627043Z"
+  },
+  {
+    "Title": "Jussi Adler-Olsen: Verheißung",
+    "Link": "https://www.zdf.de/filme/jussi-adler-olsen-verheissung-movie-100",
+    "Description": "",
+    "AddedAt": "2026-05-06T13:30:20.627039Z"
+  },
+  {
+    "Title": "Tod in den Wäldern",
+    "Link": "https://www.zdf.de/filme/tod-in-den-waeldern-movie-102",
+    "Description": "",
+    "AddedAt": "2026-05-06T13:30:20.627035Z"
+  },
+  {
+    "Title": "Teufel in Blau",
+    "Link": "https://www.zdf.de/filme/teufel-in-blau-movie-100",
+    "Description": "",
+    "AddedAt": "2026-05-06T13:30:20.627032Z"
+  },
+  {
+    "Title": "Femme",
+    "Link": "https://www.zdf.de/filme/femme-movie-100",
+    "Description": "",
+    "AddedAt": "2026-05-06T13:30:20.627027Z"
+  },
+  {
+    "Title": "Die Frau in Schwarz",
+    "Link": "https://www.zdf.de/filme/die-frau-in-schwarz-movie-100",
+    "Description": "",
+    "AddedAt": "2026-05-06T13:30:20.627023Z"
+  },
+  {
+    "Title": "Tödliche Nähe",
+    "Link": "https://www.zdf.de/filme/toedliche-naehe-movie-100",
+    "Description": "",
+    "AddedAt": "2026-05-06T13:30:20.627013Z"
+  },
+  {
+    "Title": "Leichen pflastern seinen Weg",
+    "Link": "https://www.zdf.de/filme/leichen-pflastern-seinen-weg-movie-100",
+    "Description": "",
+    "AddedAt": "2026-05-06T13:30:20.627009Z"
+  },
+  {
+    "Title": "Herr Bergmanns Rotkäppchen",
+    "Link": "https://www.zdf.de/animation/herr-bergmanns-rotkaeppchen-movie-100",
+    "Description": "",
+    "AddedAt": "2026-05-06T13:30:20.627005Z"
+  },
+  {
+    "Title": "Die drei Musketiere - D'Artagnan",
+    "Link": "https://www.zdf.de/filme/die-drei-musketiere---dartagnan-movie-100",
+    "Description": "",
+    "AddedAt": "2026-05-06T13:30:20.627002Z"
+  },
+  {
+    "Title": "Die drei Musketiere - Milady",
+    "Link": "https://www.zdf.de/filme/die-drei-musketiere---milady-movie-100",
+    "Description": "",
+    "AddedAt": "2026-05-06T13:30:20.626998Z"
+  },
+  {
+    "Title": "Geheimsache Malta",
+    "Link": "https://www.zdf.de/filme/geheimsache-malta-movie-100",
+    "Description": "",
+    "AddedAt": "2026-05-06T13:30:20.626994Z"
+  },
+  {
+    "Title": "Mortal - Mut ist unsterblich",
+    "Link": "https://www.zdf.de/filme/mortal---mut-ist-unsterblich-movie-100",
+    "Description": "",
+    "AddedAt": "2026-05-06T13:30:20.626991Z"
+  },
+  {
+    "Title": "The Courier - Tödlicher Auftrag",
+    "Link": "https://www.zdf.de/filme/the-courier---toedlicher-auftrag-movie-100",
+    "Description": "",
+    "AddedAt": "2026-05-06T13:30:20.626982Z"
+  },
+  {
+    "Title": "G20",
+    "Link": "https://www.zdf.de/filme/g20-movie-100",
+    "Description": "",
+    "AddedAt": "2026-05-06T13:30:20.626978Z"
+  },
+  {
+    "Title": "Uncharted",
+    "Link": "https://www.zdf.de/filme/uncharted-movie-100",
+    "Description": "",
+    "AddedAt": "2026-05-06T13:30:20.626974Z"
+  },
+  {
+    "Title": "Last Action Hero",
+    "Link": "https://www.zdf.de/filme/last-action-hero-movie-100",
+    "Description": "",
+    "AddedAt": "2026-05-06T13:30:20.62697Z"
+  },
+  {
+    "Title": "Jericho Ridge - Unter Beschuss",
+    "Link": "https://www.zdf.de/filme/jericho-ridge---unter-beschuss-movie-102",
+    "Description": "",
+    "AddedAt": "2026-05-06T13:30:20.626967Z"
+  },
+  {
+    "Title": "Postcard Killings",
+    "Link": "https://www.zdf.de/filme/postcard-killings-movie-102",
+    "Description": "",
+    "AddedAt": "2026-05-06T13:30:20.626963Z"
+  },
+  {
+    "Title": "Snowpiercer",
+    "Link": "https://www.zdf.de/filme/snowpiercer-movie-100",
+    "Description": "",
+    "AddedAt": "2026-05-06T13:30:20.626957Z"
+  },
+  {
+    "Title": "Vertical Limit - In größter Gefahr",
+    "Link": "https://www.zdf.de/filme/vertical-limit---in-groesster-gefahr-movie-100",
+    "Description": "",
+    "AddedAt": "2026-05-06T13:30:20.62695Z"
+  },
+  {
     "Title": "The Foreigner - Rache für meine Tochter",
     "Link": "https://www.zdf.de/filme/the-foreigner---rache-fuer-meine-tochter-movie-100",
     "Description": "",
     "AddedAt": "2025-12-11T18:24:26.120446Z"
-  },
-  {
-    "Title": "Gran Turismo",
-    "Link": "https://www.zdf.de/filme/gran-turismo-movie-100",
-    "Description": "",
-    "AddedAt": "2025-12-11T18:24:26.120441Z"
-  },
-  {
-    "Title": "Takers - The Final Job",
-    "Link": "https://www.zdf.de/filme/takers---the-final-job-movie-100",
-    "Description": "",
-    "AddedAt": "2025-12-11T18:24:26.120437Z"
-  },
-  {
-    "Title": "Der PassfälscherDer Passfälscher",
-    "Link": "https://www.zdf.de/filme/der-passfaelscher-movie-100",
-    "Description": "",
-    "AddedAt": "2025-12-11T18:24:26.120427Z"
-  },
-  {
-    "Title": "CloseClose",
-    "Link": "https://www.zdf.de/filme/close-movie-100",
-    "Description": "",
-    "AddedAt": "2025-12-11T18:24:26.120422Z"
-  },
-  {
-    "Title": "Weihnachten in Conway",
-    "Link": "https://www.zdf.de/filme/weihnachten-in-conway-movie-100",
-    "Description": "",
-    "AddedAt": "2025-12-11T18:24:26.120418Z"
   },
   {
     "Title": "Hallo Spencer - Der Film",
@@ -42,135 +240,15 @@
     "AddedAt": "2025-12-11T18:24:26.120413Z"
   },
   {
-    "Title": "Anna und die Apokalypse",
-    "Link": "https://www.zdf.de/filme/anna-und-die-apokalypse-movie-100",
-    "Description": "",
-    "AddedAt": "2025-12-11T18:24:26.120409Z"
-  },
-  {
-    "Title": "Spree - Alles für die Klicks",
-    "Link": "https://www.zdf.de/filme/spree---alles-fuer-die-klicks-movie-100",
-    "Description": "",
-    "AddedAt": "2025-12-11T18:24:26.1204Z"
-  },
-  {
-    "Title": "Tokyo Godfathers",
-    "Link": "https://www.zdf.de/animation/tokyo-godfathers-movie-100",
-    "Description": "",
-    "AddedAt": "2025-12-11T18:24:26.120396Z"
-  },
-  {
-    "Title": "Adam Sandlers acht verrückte Nächte",
-    "Link": "https://www.zdf.de/animation/adam-sandlers-acht-verrueckte-naechte-movie-100",
-    "Description": "",
-    "AddedAt": "2025-12-11T18:24:26.120391Z"
-  },
-  {
-    "Title": "Arthur Weihnachtsmann",
-    "Link": "https://www.zdf.de/animation/arthur-weihnachtsmann-movie-100",
-    "Description": "",
-    "AddedAt": "2025-12-11T18:24:26.120386Z"
-  },
-  {
-    "Title": "Der Weihnachtsstreik",
-    "Link": "https://www.zdf.de/filme/der-weihnachtsstreik-movie-100",
-    "Description": "",
-    "AddedAt": "2025-12-11T18:24:26.120382Z"
-  },
-  {
-    "Title": "This Christmas",
-    "Link": "https://www.zdf.de/filme/this-christmas-movie-100",
-    "Description": "",
-    "AddedAt": "2025-12-11T18:24:26.120377Z"
-  },
-  {
-    "Title": "Nenn' mich einfach Nikolaus",
-    "Link": "https://www.zdf.de/filme/nenn-mich-einfach-nikolaus-movie-100",
-    "Description": "",
-    "AddedAt": "2025-12-11T18:24:26.120373Z"
-  },
-  {
-    "Title": "Blendende Weihnachten",
-    "Link": "https://www.zdf.de/filme/blendende-weihnachten-movie-100",
-    "Description": "",
-    "AddedAt": "2025-12-11T18:24:26.120369Z"
-  },
-  {
-    "Title": "Verachtung",
-    "Link": "https://www.zdf.de/filme/verachtung-movie-100",
-    "Description": "",
-    "AddedAt": "2025-12-11T18:24:26.120365Z"
-  },
-  {
     "Title": "Erwartung",
     "Link": "https://www.zdf.de/filme/erwartung-movie-100",
     "Description": "",
     "AddedAt": "2025-12-11T18:24:26.120361Z"
   },
   {
-    "Title": "In der Nacht des 12.",
-    "Link": "https://www.zdf.de/filme/in-der-nacht-des-12-movie-100",
-    "Description": "",
-    "AddedAt": "2025-12-11T18:24:26.120346Z"
-  },
-  {
-    "Title": "Better Watch Out",
-    "Link": "https://www.zdf.de/filme/better-watch-out-movie-100",
-    "Description": "",
-    "AddedAt": "2025-12-11T18:24:26.120342Z"
-  },
-  {
-    "Title": "Der Nebelmann",
-    "Link": "https://www.zdf.de/filme/der-nebelmann-movie-100",
-    "Description": "",
-    "AddedAt": "2025-12-11T18:24:26.120338Z"
-  },
-  {
-    "Title": "Halt nicht an!",
-    "Link": "https://www.zdf.de/filme/halt-nicht-an-movie-100",
-    "Description": "",
-    "AddedAt": "2025-12-11T18:24:26.120334Z"
-  },
-  {
-    "Title": "Kompromat - Die Macht der Lüge",
-    "Link": "https://www.zdf.de/filme/kompromat---die-macht-der-luege-movie-100",
-    "Description": "",
-    "AddedAt": "2025-12-11T18:24:26.120329Z"
-  },
-  {
-    "Title": "See for Me - Der unsichtbare Feind",
-    "Link": "https://www.zdf.de/filme/see-for-me---der-unsichtbare-feind-movie-100",
-    "Description": "",
-    "AddedAt": "2025-12-11T18:24:26.120324Z"
-  },
-  {
-    "Title": "Michael Clayton",
-    "Link": "https://www.zdf.de/filme/michael-clayton-movie-100",
-    "Description": "",
-    "AddedAt": "2025-12-11T18:24:26.12032Z"
-  },
-  {
-    "Title": "Im Visier des Killers",
-    "Link": "https://www.zdf.de/filme/im-visier-des-killers-movie-102",
-    "Description": "",
-    "AddedAt": "2025-12-11T18:24:26.120315Z"
-  },
-  {
     "Title": "Nightwatch 2 - Dämonen der Vergangenheit",
     "Link": "https://www.zdf.de/filme/nightwatch-2---daemonen-der-vergangenheit-movie-100",
     "Description": "",
     "AddedAt": "2025-12-11T18:24:26.120307Z"
-  },
-  {
-    "Title": "Paradise Highway - Straße der Angst",
-    "Link": "https://www.zdf.de/filme/paradise-highway---strasse-der-angst-movie-100",
-    "Description": "",
-    "AddedAt": "2025-09-28T11:05:35.167404Z"
-  },
-  {
-    "Title": "Tod in den Wäldern",
-    "Link": "https://www.zdf.de/filme/tod-in-den-waeldern-movie-100",
-    "Description": "",
-    "AddedAt": "2025-09-28T11:05:35.167323Z"
   }
 ]

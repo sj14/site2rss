@@ -328,5 +328,11 @@ func getField(s *goquery.Selection, selector string) string {
 		val, _ := el.Attr(parts[len(parts)-2])
 		return val
 	}
+	// Workaround for Arte returning TitleTitle, not sure why.
+	// Can't see the issue in the HTML, e.g. the Selector matching twice.
+	// Needs further debugging.
+	if len(el.Nodes) > 1 {
+		el.Nodes = slices.Delete(el.Nodes, 1, 2)
+	}
 	return el.Text()
 }
