@@ -7,7 +7,7 @@ require (
 	github.com/VictoriaMetrics/metrics v1.44.0
 	github.com/goccy/go-yaml v1.19.2
 	github.com/gorilla/feeds v1.2.0
-	golang.org/x/sync v0.21.0
+	golang.org/x/sync v0.22.0
 )
 
 require (
