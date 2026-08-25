@@ -8,7 +8,7 @@ sites:
       link: "href@a[itemProp='url']"
       title: "h3"
       description: ""
-      pagination: ""
+      pagination: "href@a[href^='/filme-']"
   - name: "ZDF"
     url: "https://www.zdf.de/spielfilm-highlights-104"
     title: "ZDF Spielfilm-Highlights"
