@@ -216,14 +216,47 @@ func serveFeed(store *atomic.Pointer[renderedFeeds], pick func(*renderedFeeds) s
 }
 
 func updateCache(site Site, cachePath string) (uint64, error) {
+	items, err := collect(site)
+	if err != nil {
+		return 0, err
+	}
+
+	cached, err := loadCache(cachePath, site.Name)
+	if err != nil {
+		return 0, err
+	}
+
+	items = mergeWithCache(items, cached)
+
+	for _, item := range items {
+		slog.Info("found", "site", site.Name, "title", item.Title, "description", item.Description, "link", item.Link)
+	}
+
+	if err := saveCache(cachePath, site.Name, items); err != nil {
+		return 0, err
+	}
+
+	rendered, err := renderFeeds(site, items)
+	if err != nil {
+		return 0, err
+	}
+
+	publish(site.Name, rendered)
+
+	return uint64(len(items)), nil
+}
+
+// collect loads the site and every page its pagination points at, and returns
+// the items found on them.
+func collect(site Site) ([]Item, error) {
 	siteURL, err := url.Parse(site.URL)
 	if err != nil {
-		return 0, fmt.Errorf("failed to parse URL %q: %w", site.URL, err)
+		return nil, fmt.Errorf("parse URL %q: %w", site.URL, err)
 	}
 
 	doc, err := fetchDocument(site.URL)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
 	items := appendItems(nil, doc, site, siteURL)
@@ -236,97 +269,104 @@ func updateCache(site Site, cachePath string) (uint64, error) {
 		if err != nil {
 			// keep serving the previous feed rather than dropping the items of
 			// this page and re-adding them as new on the next run
-			return 0, err
+			return nil, err
 		}
 
 		items = appendItems(items, pageDoc, site, siteURL)
 	}
 
-	// a missing cache file is the first run for this site, anything else is a
-	// real problem and must not be mistaken for "no items known yet"
-	var oldEntries []Item
+	return items, nil
+}
 
-	loaded, err := os.ReadFile(filepath.Join(cachePath, site.Name+".json"))
-	if err != nil && !errors.Is(err, fs.ErrNotExist) {
-		return 0, fmt.Errorf("read cache: %w", err)
+// mergeWithCache carries the timestamp of already known items over, so only
+// genuinely new entries move to the top. The link is the identity here, the same
+// one the feed uses as item id. The result is sorted newest first.
+func mergeWithCache(items, cached []Item) []Item {
+	knownSince := make(map[string]time.Time, len(cached))
+	for _, item := range cached {
+		knownSince[item.Link] = item.AddedAt
 	}
 
-	if err == nil {
-		if err := json.Unmarshal(loaded, &oldEntries); err != nil {
-			return 0, fmt.Errorf("decode cache: %w", err)
-		}
-	}
-
-	for newIdx, new := range items {
-		for _, old := range oldEntries {
-			if old.Title == new.Title && old.Link == new.Link && old.Description == new.Description {
-				items[newIdx].AddedAt = old.AddedAt
-			}
+	for i, item := range items {
+		if addedAt, ok := knownSince[item.Link]; ok {
+			items[i].AddedAt = addedAt
 		}
 	}
 
 	slices.SortStableFunc(items, func(a, b Item) int {
-		if a.AddedAt.Equal(b.AddedAt) {
-			return 0
-		}
-		if a.AddedAt.UnixNano() > b.AddedAt.UnixNano() {
-			return -1
-		}
-		return 1
+		return b.AddedAt.Compare(a.AddedAt)
 	})
 
-	items = slices.Compact(items)
+	return items
+}
 
-	for _, item := range items {
-		slog.Info("found", "site", site.Name, "title", item.Title, "description", item.Description, "link", item.Link)
+// loadCache reads the items stored by the previous run. A missing file is the
+// first run for this site, anything else is a real problem and must not be
+// mistaken for "nothing known yet".
+func loadCache(cachePath, name string) ([]Item, error) {
+	loaded, err := os.ReadFile(filepath.Join(cachePath, name+".json"))
+	if errors.Is(err, fs.ErrNotExist) {
+		return nil, nil
 	}
 
+	if err != nil {
+		return nil, fmt.Errorf("read cache: %w", err)
+	}
+
+	var items []Item
+	if err := json.Unmarshal(loaded, &items); err != nil {
+		return nil, fmt.Errorf("decode cache: %w", err)
+	}
+
+	return items, nil
+}
+
+func saveCache(cachePath, name string, items []Item) error {
 	b, err := json.MarshalIndent(items, "", "  ")
 	if err != nil {
-		return 0, fmt.Errorf("encode cache: %w", err)
+		return fmt.Errorf("encode cache: %w", err)
 	}
 
-	err = os.WriteFile(filepath.Join(cachePath, site.Name+".json"), b, os.ModePerm)
-	if err != nil {
-		return 0, fmt.Errorf("write cache: %w", err)
+	if err := os.WriteFile(filepath.Join(cachePath, name+".json"), b, os.ModePerm); err != nil {
+		return fmt.Errorf("write cache: %w", err)
 	}
 
+	return nil
+}
+
+func renderFeeds(site Site, items []Item) (*renderedFeeds, error) {
 	feed := &feeds.Feed{
 		Title:       site.Title,
 		Link:        &feeds.Link{Href: site.URL},
 		Description: site.Description,
 	}
 
-	for _, lt := range items {
+	for _, item := range items {
 		feed.Items = append(feed.Items, &feeds.Item{
-			Id:          lt.Link,
-			Title:       lt.Title,
-			Link:        &feeds.Link{Href: lt.Link},
-			Description: lt.Description,
-			Created:     lt.AddedAt,
+			Id:          item.Link,
+			Title:       item.Title,
+			Link:        &feeds.Link{Href: item.Link},
+			Description: item.Description,
+			Created:     item.AddedAt,
 		})
 	}
 
 	rendered := &renderedFeeds{}
 
-	rendered.rss, err = feed.ToRss()
-	if err != nil {
-		return 0, fmt.Errorf("build rss feed: %w", err)
+	var err error
+	if rendered.rss, err = feed.ToRss(); err != nil {
+		return nil, fmt.Errorf("build rss feed: %w", err)
 	}
 
-	rendered.atom, err = feed.ToAtom()
-	if err != nil {
-		return 0, fmt.Errorf("build atom feed: %w", err)
+	if rendered.atom, err = feed.ToAtom(); err != nil {
+		return nil, fmt.Errorf("build atom feed: %w", err)
 	}
 
-	rendered.json, err = feed.ToJSON()
-	if err != nil {
-		return 0, fmt.Errorf("build json feed: %w", err)
+	if rendered.json, err = feed.ToJSON(); err != nil {
+		return nil, fmt.Errorf("build json feed: %w", err)
 	}
 
-	publish(site.Name, rendered)
-
-	return uint64(len(items)), nil
+	return rendered, nil
 }
 
 const (
