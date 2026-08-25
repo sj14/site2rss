@@ -426,6 +426,18 @@ func fetchOnce(client *http.Client, pageURL string) (*goquery.Document, error) {
 	return doc, nil
 }
 
+// resolveURL turns a href found on a page into an absolute URL, following the
+// same rule a browser applies: relative paths, absolute URLs and protocol
+// relative links all resolve against the page they were found on.
+func resolveURL(base *url.URL, href string) (string, error) {
+	ref, err := url.Parse(strings.TrimSpace(href))
+	if err != nil {
+		return "", fmt.Errorf("parse URL %q: %w", href, err)
+	}
+
+	return base.ResolveReference(ref).String(), nil
+}
+
 // paginationURLs resolves the links the pagination selector matches on the given
 // document. The links are only followed one level deep, so the pages behind a
 // "show more" button are picked up without crawling the whole site.
@@ -440,13 +452,12 @@ func paginationURLs(doc *goquery.Document, site Site, siteURL *url.URL) []string
 	)
 
 	for _, href := range getFields(doc.Selection, site.Selector.Pagination) {
-		ref, err := url.Parse(strings.TrimSpace(href))
+		pageURL, err := resolveURL(siteURL, href)
 		if err != nil {
-			slog.Warn("failed parsing pagination URL", "site", site.Name, "url", href, "err", err)
+			slog.Warn("failed resolving pagination URL", "site", site.Name, "err", err)
 			continue
 		}
 
-		pageURL := siteURL.ResolveReference(ref).String()
 		if seen[pageURL] {
 			continue
 		}
@@ -470,18 +481,12 @@ func appendItems(items []Item, doc *goquery.Document, site Site, siteURL *url.UR
 		var (
 			title       = normalizeSpace(html.UnescapeString(getField(s, site.Selector.Title)))
 			description = normalizeSpace(html.UnescapeString(getField(s, site.Selector.Description)))
-			linkRaw     = getField(s, site.Selector.Link)
 		)
 
-		link, err := url.JoinPath(siteURL.Host, linkRaw)
+		link, err := resolveURL(siteURL, getField(s, site.Selector.Link))
 		if err != nil {
-			slog.Warn("failed joining URL", "site", site.Name, "link", linkRaw, "err", err)
+			slog.Warn("failed resolving item URL", "site", site.Name, "err", err)
 			return
-		}
-
-		link = strings.TrimSpace(link)
-		if !strings.HasPrefix(link, "http") {
-			link = "https://" + link
 		}
 
 		if isDuplicate(items, title, link) {
