@@ -14,24 +14,46 @@ import (
 
 const (
 	// fetchAttempts, retryDelay and maxRetryDelay control the backoff once a page
-	// is rate limited. retryDelay only applies when the response carries no usable
-	// Retry-After header. arte hands out a minute per 429, so the attempts need to
-	// cover several of those to keep a busy window from failing the update.
+	// failed in a way that a later attempt can plausibly fix. retryDelay only
+	// applies when the response carries no usable Retry-After header. arte hands
+	// out a minute per 429, so the attempts need to cover several of those to keep
+	// a busy window from failing the update.
 	fetchAttempts = 5
 	retryDelay    = 30 * time.Second
 	maxRetryDelay = 2 * time.Minute
-	fetchTimeout  = 10 * time.Second
 )
 
-// rateLimitError marks a response the site asked us to repeat later.
-type rateLimitError struct {
-	url        string
-	retryAfter time.Duration
+// These are variables rather than constants so the tests can shrink them, real
+// timeouts and backoffs would make the suite take minutes.
+var (
+	fetchTimeout = 10 * time.Second
+	// transientDelay is the pause after a timeout, a refused connection or a
+	// server error. Those tend to pass on their own, so waiting long is pointless.
+	transientDelay = 5 * time.Second
+	// retryAfterBuffer is added to the delay a site asks for. Sites are not exact
+	// about their own window, and coming back a second too early wastes an attempt.
+	retryAfterBuffer = 1 * time.Second
+)
+
+// retryableError marks a failure a later attempt can plausibly fix, together
+// with how long to wait first. Anything else, a 404 or a page that does not
+// parse, is returned as is: repeating it would only cost time.
+type retryableError struct {
+	url    string
+	reason string
+	delay  time.Duration
+	err    error
 }
 
-func (e *rateLimitError) Error() string {
-	return fmt.Sprintf("rate limited for %q, retry after %s", e.url, e.retryAfter)
+func (e *retryableError) Error() string {
+	if e.err != nil {
+		return fmt.Sprintf("%s (%q): %v", e.reason, e.url, e.err)
+	}
+
+	return fmt.Sprintf("%s (%q)", e.reason, e.url)
 }
+
+func (e *retryableError) Unwrap() error { return e.err }
 
 // retryAfter reads how long the site wants us to wait. The header may also hold
 // an HTTP date, which falls back to the fixed delay.
@@ -41,12 +63,11 @@ func retryAfter(resp *http.Response) time.Duration {
 		return retryDelay
 	}
 
-	return min(time.Duration(seconds)*time.Second, maxRetryDelay)
+	return min(time.Duration(seconds)*time.Second+retryAfterBuffer, maxRetryDelay)
 }
 
-// fetchDocument loads and parses a single page. Arte answers with 429 when it
-// gets several requests in a short time, so a rate limited page is retried after
-// the delay the response asks for instead of losing its items.
+// fetchDocument loads and parses a single page, repeating attempts that failed
+// for a reason that may well be gone a moment later.
 func fetchDocument(ctx context.Context, pageURL string) (*goquery.Document, error) {
 	client := http.Client{Timeout: fetchTimeout}
 
@@ -60,15 +81,23 @@ func fetchDocument(ctx context.Context, pageURL string) (*goquery.Document, erro
 			return doc, nil
 		}
 
-		var limited *rateLimitError
-		if !errors.As(err, &limited) {
+		// a cancelled context looks like a timeout here, but means we are shutting
+		// down and must not keep trying
+		if ctx.Err() != nil {
+			return nil, err
+		}
+
+		var retryable *retryableError
+		if !errors.As(err, &retryable) {
 			return nil, err
 		}
 
 		if attempt < fetchAttempts {
-			slog.Warn("rate limited, retrying", "url", pageURL, "delay", limited.retryAfter)
+			slog.Warn("fetch failed, retrying",
+				"url", pageURL, "reason", retryable.reason, "delay", retryable.delay,
+				"attempt", attempt, "of", fetchAttempts)
 
-			if err := sleep(ctx, limited.retryAfter); err != nil {
+			if err := sleep(ctx, retryable.delay); err != nil {
 				return nil, err
 			}
 		}
@@ -99,15 +128,23 @@ func fetchOnce(ctx context.Context, client *http.Client, pageURL string) (*goque
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed loading site (%q): %w", pageURL, err)
+		// timeouts, refused connections and dns hiccups usually pass by themselves
+		return nil, &retryableError{url: pageURL, reason: "request failed", delay: transientDelay, err: err}
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode == http.StatusTooManyRequests {
-		return nil, &rateLimitError{url: pageURL, retryAfter: retryAfter(resp)}
-	}
+	switch {
+	case resp.StatusCode == http.StatusTooManyRequests:
+		return nil, &retryableError{url: pageURL, reason: "rate limited", delay: retryAfter(resp)}
 
-	if resp.StatusCode != http.StatusOK {
+	case resp.StatusCode >= http.StatusInternalServerError:
+		return nil, &retryableError{
+			url:    pageURL,
+			reason: fmt.Sprintf("server error %d", resp.StatusCode),
+			delay:  transientDelay,
+		}
+
+	case resp.StatusCode != http.StatusOK:
 		return nil, fmt.Errorf("non 200 status (%d) for %q", resp.StatusCode, pageURL)
 	}
 
