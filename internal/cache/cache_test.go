@@ -72,7 +72,8 @@ func TestLoad(t *testing.T) {
 func TestSaveLoadRoundtrip(t *testing.T) {
 	dir := t.TempDir()
 	want := []scrape.Item{{
-		Title:   "Film",
+		// & < > must survive without the encoder escaping them for html
+		Title:   "Sisi & ich <Film>",
 		Link:    "https://example.com/film",
 		AddedAt: time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC),
 	}}
@@ -86,8 +87,18 @@ func TestSaveLoadRoundtrip(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if len(got) != 1 || got[0].Link != want[0].Link || !got[0].AddedAt.Equal(want[0].AddedAt) {
+	if len(got) != 1 || got[0].Title != want[0].Title || got[0].Link != want[0].Link ||
+		!got[0].AddedAt.Equal(want[0].AddedAt) {
 		t.Errorf("got %+v, want %+v", got, want)
+	}
+
+	raw, err := os.ReadFile(filepath.Join(dir, "Test.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !strings.Contains(string(raw), "Sisi & ich <Film>") {
+		t.Errorf("the file escapes what it does not need to:\n%s", raw)
 	}
 
 	info, err := os.Stat(filepath.Join(dir, "Test.json"))

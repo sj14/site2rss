@@ -3,6 +3,7 @@
 package cache
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -40,8 +41,15 @@ func Load(dir, name string) ([]scrape.Item, error) {
 // is renamed into place, so a process killed mid write cannot leave a truncated
 // file behind that the next run would refuse to decode.
 func Save(dir, name string, items []scrape.Item) error {
-	b, err := json.MarshalIndent(items, "", "  ")
-	if err != nil {
+	// the default encoder escapes &, < and > for embedding in html, which only
+	// makes the file harder to read
+	var buf bytes.Buffer
+
+	enc := json.NewEncoder(&buf)
+	enc.SetEscapeHTML(false)
+	enc.SetIndent("", "  ")
+
+	if err := enc.Encode(items); err != nil {
 		return fmt.Errorf("encode cache: %w", err)
 	}
 
@@ -51,7 +59,7 @@ func Save(dir, name string, items []scrape.Item) error {
 	}
 	defer os.Remove(tmp.Name())
 
-	if _, err := tmp.Write(b); err != nil {
+	if _, err := tmp.Write(buf.Bytes()); err != nil {
 		tmp.Close()
 		return fmt.Errorf("write cache: %w", err)
 	}
