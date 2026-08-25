@@ -28,4 +28,5 @@ sites:
       link: "href@a"
       title: "h3[data-testid='ts-tsHvrTitle']"
       description: ""
-      pagination: "href@a[href*='?page=']"
+      # ?page=1 liefert dieselbe Seite wie die Basis-URL
+      pagination: "href@a[href*='?page=']:not([href$='page=1'])"
