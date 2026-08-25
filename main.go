@@ -8,6 +8,7 @@ import (
 	"flag"
 	"fmt"
 	"html"
+	"io"
 	"log/slog"
 	"net/http"
 	"net/url"
@@ -17,6 +18,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"sync/atomic"
 	"syscall"
 	"time"
 
@@ -97,6 +99,10 @@ func main() {
 		os.Exit(1)
 	}
 
+	for _, site := range config.Sites {
+		feedStore[strings.ToLower(site.Name)] = &atomic.Pointer[renderedFeeds]{}
+	}
+
 	go func() {
 		for {
 			updates := make(map[string]uint64, len(config.Sites))
@@ -124,15 +130,12 @@ func main() {
 	}()
 
 	for _, site := range config.Sites {
-		http.HandleFunc("/"+strings.ToLower(site.Name)+"/rss", func(w http.ResponseWriter, r *http.Request) {
-			w.Write([]byte(state[strings.ToLower(site.Name)+"_rss"]))
-		})
-		http.HandleFunc("/"+strings.ToLower(site.Name)+"/atom", func(w http.ResponseWriter, r *http.Request) {
-			w.Write([]byte(state[strings.ToLower(site.Name)+"_atom"]))
-		})
-		http.HandleFunc("/"+strings.ToLower(site.Name)+"/json", func(w http.ResponseWriter, r *http.Request) {
-			w.Write([]byte(state[strings.ToLower(site.Name)+"_json"]))
-		})
+		name := strings.ToLower(site.Name)
+		store := feedStore[name]
+
+		http.HandleFunc("/"+name+"/rss", serveFeed(store, func(f *renderedFeeds) string { return f.rss }))
+		http.HandleFunc("/"+name+"/atom", serveFeed(store, func(f *renderedFeeds) string { return f.atom }))
+		http.HandleFunc("/"+name+"/json", serveFeed(store, func(f *renderedFeeds) string { return f.json }))
 	}
 
 	http.HandleFunc("/metrics", func(w http.ResponseWriter, req *http.Request) {
@@ -175,10 +178,41 @@ func main() {
 	slog.Info("shut down")
 }
 
+// renderedFeeds holds the formats of one site as they are served. It is swapped
+// as a whole, so a reader never sees a half updated set of formats.
+type renderedFeeds struct {
+	rss  string
+	atom string
+	json string
+}
+
 var (
 	itemSizesMetrics = map[string]*metrics.Gauge{}
-	state            = map[string]string{}
+	// feedStore is filled once at startup and only read afterwards. Only the
+	// pointers inside are swapped, which keeps the handlers lock free.
+	feedStore = map[string]*atomic.Pointer[renderedFeeds]{}
 )
+
+// publish makes the rendered feeds visible to the handlers. Sites that were not
+// registered at startup, as in tests, have nothing to publish to.
+func publish(name string, feeds *renderedFeeds) {
+	if store, ok := feedStore[strings.ToLower(name)]; ok {
+		store.Store(feeds)
+	}
+}
+
+// serveFeed writes one format of the current snapshot.
+func serveFeed(store *atomic.Pointer[renderedFeeds], pick func(*renderedFeeds) string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		feeds := store.Load()
+		if feeds == nil {
+			http.Error(w, "feed not generated yet", http.StatusServiceUnavailable)
+			return
+		}
+
+		io.WriteString(w, pick(feeds))
+	}
+}
 
 func updateCache(site Site, cachePath string) (uint64, error) {
 	siteURL, err := url.Parse(site.URL)
@@ -276,29 +310,27 @@ func updateCache(site Site, cachePath string) (uint64, error) {
 		})
 	}
 
-	rss, err := feed.ToRss()
+	rendered := &renderedFeeds{}
+
+	rendered.rss, err = feed.ToRss()
 	if err != nil {
 		slog.Error("failed building feed", "site", site.Name, "format", "rss", "err", err)
 		os.Exit(1)
 	}
 
-	state[strings.ToLower(site.Name)+"_rss"] = rss
-
-	atom, err := feed.ToAtom()
+	rendered.atom, err = feed.ToAtom()
 	if err != nil {
 		slog.Error("failed building feed", "site", site.Name, "format", "atom", "err", err)
 		os.Exit(1)
 	}
 
-	state[strings.ToLower(site.Name)+"_atom"] = atom
-
-	json, err := feed.ToJSON()
+	rendered.json, err = feed.ToJSON()
 	if err != nil {
 		slog.Error("failed building feed", "site", site.Name, "format", "json", "err", err)
 		os.Exit(1)
 	}
 
-	state[strings.ToLower(site.Name)+"_json"] = json
+	publish(site.Name, rendered)
 
 	return uint64(len(items)), nil
 }
@@ -313,8 +345,9 @@ const (
 	paginationDelay = 10 * time.Second
 	// fetchAttempts, retryDelay and maxRetryDelay control the backoff once a page
 	// is rate limited anyway. retryDelay only applies when the response carries no
-	// usable Retry-After header.
-	fetchAttempts = 3
+	// usable Retry-After header. arte hands out a minute per 429, so the attempts
+	// need to cover several of those to keep a busy window from failing the update.
+	fetchAttempts = 5
 	retryDelay    = 30 * time.Second
 	maxRetryDelay = 2 * time.Minute
 )
