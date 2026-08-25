@@ -17,7 +17,7 @@ func getFields(s *goquery.Selection, selector string) []string {
 
 	var values []string
 
-	s.Find(css).Each(func(i int, el *goquery.Selection) {
+	s.Find(css).Each(func(_ int, el *goquery.Selection) {
 		if !isAttr {
 			values = append(values, el.Text())
 			return

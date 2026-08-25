@@ -36,14 +36,37 @@ func Load(dir, name string) ([]scrape.Item, error) {
 	return items, nil
 }
 
+// Save replaces the stored items. The new content goes to a temporary file that
+// is renamed into place, so a process killed mid write cannot leave a truncated
+// file behind that the next run would refuse to decode.
 func Save(dir, name string, items []scrape.Item) error {
 	b, err := json.MarshalIndent(items, "", "  ")
 	if err != nil {
 		return fmt.Errorf("encode cache: %w", err)
 	}
 
-	if err := os.WriteFile(filepath.Join(dir, name+".json"), b, os.ModePerm); err != nil {
+	tmp, err := os.CreateTemp(dir, name+".*.tmp")
+	if err != nil {
+		return fmt.Errorf("create cache: %w", err)
+	}
+	defer os.Remove(tmp.Name())
+
+	if _, err := tmp.Write(b); err != nil {
+		tmp.Close()
 		return fmt.Errorf("write cache: %w", err)
+	}
+
+	if err := tmp.Close(); err != nil {
+		return fmt.Errorf("close cache: %w", err)
+	}
+
+	// CreateTemp uses 0600, the cache is not secret
+	if err := os.Chmod(tmp.Name(), 0o644); err != nil {
+		return fmt.Errorf("chmod cache: %w", err)
+	}
+
+	if err := os.Rename(tmp.Name(), filepath.Join(dir, name+".json")); err != nil {
+		return fmt.Errorf("replace cache: %w", err)
 	}
 
 	return nil

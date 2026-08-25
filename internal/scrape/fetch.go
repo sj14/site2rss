@@ -1,6 +1,7 @@
 package scrape
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -46,7 +47,7 @@ func retryAfter(resp *http.Response) time.Duration {
 // fetchDocument loads and parses a single page. Arte answers with 429 when it
 // gets several requests in a short time, so a rate limited page is retried after
 // the delay the response asks for instead of losing its items.
-func fetchDocument(pageURL string) (*goquery.Document, error) {
+func fetchDocument(ctx context.Context, pageURL string) (*goquery.Document, error) {
 	client := http.Client{Timeout: fetchTimeout}
 
 	var err error
@@ -54,7 +55,7 @@ func fetchDocument(pageURL string) (*goquery.Document, error) {
 	for attempt := 1; attempt <= fetchAttempts; attempt++ {
 		var doc *goquery.Document
 
-		doc, err = fetchOnce(&client, pageURL)
+		doc, err = fetchOnce(ctx, &client, pageURL)
 		if err == nil {
 			return doc, nil
 		}
@@ -66,15 +67,37 @@ func fetchDocument(pageURL string) (*goquery.Document, error) {
 
 		if attempt < fetchAttempts {
 			slog.Warn("rate limited, retrying", "url", pageURL, "delay", limited.retryAfter)
-			time.Sleep(limited.retryAfter)
+
+			if err := sleep(ctx, limited.retryAfter); err != nil {
+				return nil, err
+			}
 		}
 	}
 
 	return nil, err
 }
 
-func fetchOnce(client *http.Client, pageURL string) (*goquery.Document, error) {
-	resp, err := client.Get(pageURL)
+// sleep waits for the given duration, but gives up as soon as the context is
+// cancelled. The waits here reach minutes, which is too long to block a shutdown.
+func sleep(ctx context.Context, d time.Duration) error {
+	timer := time.NewTimer(d)
+	defer timer.Stop()
+
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case <-timer.C:
+		return nil
+	}
+}
+
+func fetchOnce(ctx context.Context, client *http.Client, pageURL string) (*goquery.Document, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, pageURL, nil)
+	if err != nil {
+		return nil, fmt.Errorf("build request for %q: %w", pageURL, err)
+	}
+
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("failed loading site (%q): %w", pageURL, err)
 	}

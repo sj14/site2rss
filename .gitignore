@@ -1,0 +1,5 @@
+# built binary
+/site2rss
+
+# local test output
+*.test

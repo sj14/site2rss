@@ -89,4 +89,23 @@ func TestSaveLoadRoundtrip(t *testing.T) {
 	if len(got) != 1 || got[0].Link != want[0].Link || !got[0].AddedAt.Equal(want[0].AddedAt) {
 		t.Errorf("got %+v, want %+v", got, want)
 	}
+
+	info, err := os.Stat(filepath.Join(dir, "Test.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if info.Mode().Perm() != 0o644 {
+		t.Errorf("cache file mode is %v, want -rw-r--r--", info.Mode().Perm())
+	}
+
+	// the temporary file used for the atomic replace must not survive
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(entries) != 1 {
+		t.Errorf("cache dir holds %d files, want only the cache itself", len(entries))
+	}
 }

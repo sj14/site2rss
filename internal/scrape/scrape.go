@@ -2,6 +2,7 @@
 package scrape
 
 import (
+	"context"
 	"fmt"
 	"html"
 	"log/slog"
@@ -33,13 +34,13 @@ type Item struct {
 
 // Collect loads the site and every page its pagination points at, and returns
 // the items found on them.
-func Collect(site config.Site) ([]Item, error) {
+func Collect(ctx context.Context, site config.Site) ([]Item, error) {
 	siteURL, err := url.Parse(site.URL)
 	if err != nil {
 		return nil, fmt.Errorf("parse URL %q: %w", site.URL, err)
 	}
 
-	doc, err := fetchDocument(site.URL)
+	doc, err := fetchDocument(ctx, site.URL)
 	if err != nil {
 		return nil, err
 	}
@@ -48,9 +49,11 @@ func Collect(site config.Site) ([]Item, error) {
 
 	for _, pageURL := range PaginationURLs(doc, site, siteURL) {
 		// arte answers with 429 when the pages are requested too fast
-		time.Sleep(paginationDelay)
+		if err := sleep(ctx, paginationDelay); err != nil {
+			return nil, err
+		}
 
-		pageDoc, err := fetchDocument(pageURL)
+		pageDoc, err := fetchDocument(ctx, pageURL)
 		if err != nil {
 			// keep serving the previous feed rather than dropping the items of
 			// this page and re-adding them as new on the next run
@@ -71,7 +74,7 @@ func Extract(doc *goquery.Document, site config.Site, siteURL *url.URL) []Item {
 // appendItems extracts the items of a single page, skipping the ones already
 // collected from previous pages.
 func appendItems(items []Item, doc *goquery.Document, site config.Site, siteURL *url.URL) []Item {
-	doc.Find(site.Selector.Item).Each(func(i int, s *goquery.Selection) {
+	doc.Find(site.Selector.Item).Each(func(_ int, s *goquery.Selection) {
 		var (
 			title       = normalizeSpace(html.UnescapeString(getField(s, site.Selector.Title)))
 			description = normalizeSpace(html.UnescapeString(getField(s, site.Selector.Description)))

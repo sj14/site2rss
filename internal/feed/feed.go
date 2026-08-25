@@ -66,8 +66,20 @@ func (s *Store) Publish(rendered *Feeds) {
 	s.current.Store(rendered)
 }
 
-// Handler serves one format of the current snapshot.
-func (s *Store) Handler(pick func(*Feeds) string) http.HandlerFunc {
+func (s *Store) RSS() http.HandlerFunc {
+	return s.handler("application/rss+xml; charset=utf-8", func(f *Feeds) string { return f.RSS })
+}
+
+func (s *Store) Atom() http.HandlerFunc {
+	return s.handler("application/atom+xml; charset=utf-8", func(f *Feeds) string { return f.Atom })
+}
+
+func (s *Store) JSON() http.HandlerFunc {
+	return s.handler("application/feed+json; charset=utf-8", func(f *Feeds) string { return f.JSON })
+}
+
+// handler serves one format of the current snapshot.
+func (s *Store) handler(contentType string, pick func(*Feeds) string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		rendered := s.current.Load()
 		if rendered == nil {
@@ -75,6 +87,7 @@ func (s *Store) Handler(pick func(*Feeds) string) http.HandlerFunc {
 			return
 		}
 
+		w.Header().Set("Content-Type", contentType)
 		io.WriteString(w, pick(rendered))
 	}
 }
