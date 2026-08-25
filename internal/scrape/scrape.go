@@ -76,11 +76,18 @@ func Extract(doc *goquery.Document, site config.Site, siteURL *url.URL) []Item {
 func appendItems(items []Item, doc *goquery.Document, site config.Site, siteURL *url.URL) []Item {
 	doc.Find(site.Selector.Item).Each(func(_ int, s *goquery.Selection) {
 		var (
-			title       = normalizeSpace(html.UnescapeString(getField(s, site.Selector.Title)))
-			description = normalizeSpace(html.UnescapeString(getField(s, site.Selector.Description)))
+			title       = normalizeSpace(html.UnescapeString(value(s, site.Selector.Title)))
+			description = normalizeSpace(html.UnescapeString(value(s, site.Selector.Description)))
+			found       = values(s, site.Selector.Link)
 		)
 
-		link, err := resolveURL(siteURL, getField(s, site.Selector.Link))
+		// an item without a link is nothing a reader could open
+		if len(found) == 0 {
+			slog.Warn("item without a link", "site", site.Name, "title", title)
+			return
+		}
+
+		link, err := resolveURL(siteURL, found[0])
 		if err != nil {
 			slog.Warn("failed resolving item URL", "site", site.Name, "err", err)
 			return
@@ -132,7 +139,7 @@ func PaginationURLs(doc *goquery.Document, site config.Site, siteURL *url.URL) [
 		seen = map[string]bool{siteURL.String(): true}
 	)
 
-	for _, href := range getFields(doc.Selection, site.Selector.Pagination) {
+	for _, href := range values(doc.Selection, site.Selector.Pagination) {
 		pageURL, err := resolveURL(siteURL, href)
 		if err != nil {
 			slog.Warn("failed resolving pagination URL", "site", site.Name, "err", err)

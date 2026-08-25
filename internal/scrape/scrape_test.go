@@ -3,6 +3,7 @@ package scrape
 import (
 	"bytes"
 	"net/url"
+	"slices"
 	"testing"
 
 	"github.com/PuerkitoBio/goquery"
@@ -39,38 +40,83 @@ func TestResolveURL(t *testing.T) {
 	}
 }
 
-func TestGetField(t *testing.T) {
+func TestSplitSelector(t *testing.T) {
+	tests := []struct {
+		selector  string
+		css, attr string
+	}{
+		// no pseudo element means the text, ::text spells the same out
+		{"h3", "h3", ""},
+		{"h3::text", "h3", ""},
+		{"a", "a", ""},
+		// an attribute has to be asked for
+		{"a::attr(href)", "a", "href"},
+		{"div::attr(data-url)", "div", "data-url"},
+		{"time::attr(datetime)", "time", "datetime"},
+		// no css part means the matched item itself
+		{"::attr(data-url)", "", "data-url"},
+		{"::text", "", ""},
+		// css that contains an "@" or brackets stays in one piece
+		{"a[href*='@']", "a[href*='@']", ""},
+		{"a:not([href*='@'])::attr(href)", "a:not([href*='@'])", "href"},
+		{"", "", ""},
+	}
+
+	for _, tt := range tests {
+		css, attr := splitSelector(tt.selector)
+		if css != tt.css || attr != tt.attr {
+			t.Errorf("splitSelector(%q) = (%q, %q), want (%q, %q)", tt.selector, css, attr, tt.css, tt.attr)
+		}
+	}
+}
+
+func TestValues(t *testing.T) {
 	doc, err := goquery.NewDocumentFromReader(bytes.NewReader([]byte(`
-		<div class="item">
+		<div class="card" data-url="/on-the-item">
 			<a href="/first">one</a>
 			<a>no href</a>
+			<a href="mailto:kontakt@example.com">mail</a>
 			<h3>Title</h3>
 			<h3>Title</h3>
+			<time datetime="2026-01-01">1. Januar</time>
 		</div>`)))
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	item := doc.Find("div.item")
+	item := doc.Find("div.card")
 
-	tests := []struct {
-		selector string
-		want     string
-		wantAll  int
-	}{
-		{"href@a", "/first", 1}, // elements without the attribute are skipped
-		{"h3", "Title", 2},      // the duplicated title must not become "TitleTitle"
-		{"", "", 0},             // an unset selector yields nothing
-		{".missing", "", 0},     // a selector that matches nothing yields nothing
+	firstTests := map[string]string{
+		"h3":                    "Title", // the duplicated title must not become "TitleTitle"
+		"h3::text":              "Title",
+		"a::attr(href)":         "/first",
+		"time::attr(datetime)":  "2026-01-01",
+		"::attr(data-url)":      "/on-the-item",
+		"":                      "", // an unset field stays empty
+		".missing":              "",
+		"a::attr(data-missing)": "",
 	}
 
-	for _, tt := range tests {
-		if got := getField(item, tt.selector); got != tt.want {
-			t.Errorf("getField(%q) = %q, want %q", tt.selector, got, tt.want)
+	for selector, want := range firstTests {
+		if got := value(item, selector); got != want {
+			t.Errorf("value(%q) = %q, want %q", selector, got, want)
 		}
+	}
 
-		if got := getFields(item, tt.selector); len(got) != tt.wantAll {
-			t.Errorf("getFields(%q) = %q, want %d values", tt.selector, got, tt.wantAll)
+	allTests := map[string][]string{
+		// the anchor without an href is skipped, and an "@" is plain css
+		"a::attr(href)":                  {"/first", "mailto:kontakt@example.com"},
+		"a[href*='@']::attr(href)":       {"mailto:kontakt@example.com"},
+		"a:not([href*='@'])::attr(href)": {"/first"},
+		"a::text":                        {"one", "no href", "mail"},
+		"a":                              {"one", "no href", "mail"},
+		"h3::attr(href)":                 nil, // no such attribute to read
+		"":                               nil,
+	}
+
+	for selector, want := range allTests {
+		if got := values(item, selector); !slices.Equal(got, want) {
+			t.Errorf("values(%q) = %q, want %q", selector, got, want)
 		}
 	}
 }
