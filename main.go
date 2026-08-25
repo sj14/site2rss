@@ -435,9 +435,9 @@ func paginationURLs(doc *goquery.Document, site Site, siteURL *url.URL) []string
 func appendItems(items []Item, doc *goquery.Document, site Site, siteURL *url.URL) []Item {
 	doc.Find(site.Selector.Item).Each(func(i int, s *goquery.Selection) {
 		var (
-			title       = getField(s, site.Selector.Title)
+			title       = normalizeSpace(html.UnescapeString(getField(s, site.Selector.Title)))
+			description = normalizeSpace(html.UnescapeString(getField(s, site.Selector.Description)))
 			linkRaw     = getField(s, site.Selector.Link)
-			description = getField(s, site.Selector.Description)
 		)
 
 		link, err := url.JoinPath(siteURL.Host, linkRaw)
@@ -451,21 +451,37 @@ func appendItems(items []Item, doc *goquery.Document, site Site, siteURL *url.UR
 			link = "https://" + link
 		}
 
-		for _, item := range items {
-			if item.Link == link {
-				return
-			}
+		if isDuplicate(items, title, link) {
+			return
 		}
 
 		items = append(items, Item{
 			Link:        link,
-			Title:       normalizeSpace(html.UnescapeString(title)),
-			Description: normalizeSpace(html.UnescapeString(description)),
+			Title:       title,
+			Description: description,
 			AddedAt:     time.Now().UTC(),
 		})
 	})
 
 	return items
+}
+
+// isDuplicate reports whether the item was already collected. Beside the link,
+// the title is compared as well: the ard lists the same film under several slugs
+// when it appears in more than one genre, which the link alone does not catch.
+// Items without a title are only deduplicated by their link.
+func isDuplicate(items []Item, title, link string) bool {
+	for _, item := range items {
+		if item.Link == link {
+			return true
+		}
+
+		if title != "" && item.Title == title {
+			return true
+		}
+	}
+
+	return false
 }
 
 // normalizeSpace trims the value and collapses runs of whitespace into a single
