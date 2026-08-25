@@ -22,7 +22,7 @@ sites:
     title: "Arte Kinofilme"
     description: "Kultfilme, Autorenfilme, Stummfilme – Entdecken Sie die Vielfalt des ARTE-Filmangebots."
     selector:
-      item: "div[data-testid='ts-tsItem']"
+      item: "li[data-testid='ts-tsItem']:has(h3[data-testid='ts-tsHvrTitle'])"
       link: "href@a"
-      title: "h3"
+      title: "h3[data-testid='ts-tsHvrTitle']"
       description: ""

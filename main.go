@@ -226,8 +226,8 @@ func updateCache(site Site, cachePath string) (uint64, error) {
 
 		items = append(items, Item{
 			Link:        link,
-			Title:       strings.TrimSpace(html.UnescapeString(title)),
-			Description: strings.TrimSpace(html.UnescapeString(description)),
+			Title:       normalizeSpace(html.UnescapeString(title)),
+			Description: normalizeSpace(html.UnescapeString(description)),
 			AddedAt:     time.Now().UTC(),
 		})
 	})
@@ -319,6 +319,12 @@ func updateCache(site Site, cachePath string) (uint64, error) {
 	state[strings.ToLower(site.Name)+"_json"] = json
 
 	return uint64(len(items)), nil
+}
+
+// normalizeSpace trims the value and collapses runs of whitespace into a single
+// space, since the markup indentation ends up inside the extracted text.
+func normalizeSpace(s string) string {
+	return strings.Join(strings.Fields(s), " ")
 }
 
 func getField(s *goquery.Selection, selector string) string {
