@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"html"
 	"io"
+	"io/fs"
 	"log/slog"
 	"net/http"
 	"net/url"
@@ -241,20 +242,18 @@ func updateCache(site Site, cachePath string) (uint64, error) {
 		items = appendItems(items, pageDoc, site, siteURL)
 	}
 
+	// a missing cache file is the first run for this site, anything else is a
+	// real problem and must not be mistaken for "no items known yet"
 	var oldEntries []Item
 
 	loaded, err := os.ReadFile(filepath.Join(cachePath, site.Name+".json"))
-	if err != nil {
-		if !strings.Contains(err.Error(), "no such file or directory") &&
-			!strings.Contains(err.Error(), "The system cannot find the file specified.") {
-			slog.Error("failed reading cache", "site", site.Name, "err", err)
-			panic(err)
-		}
-	} else {
-		err = json.Unmarshal(loaded, &oldEntries)
-		if err != nil {
-			slog.Error("failed decoding cache", "site", site.Name, "err", err)
-			panic(err)
+	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return 0, fmt.Errorf("read cache: %w", err)
+	}
+
+	if err == nil {
+		if err := json.Unmarshal(loaded, &oldEntries); err != nil {
+			return 0, fmt.Errorf("decode cache: %w", err)
 		}
 	}
 
@@ -284,14 +283,12 @@ func updateCache(site Site, cachePath string) (uint64, error) {
 
 	b, err := json.MarshalIndent(items, "", "  ")
 	if err != nil {
-		slog.Error("failed encoding cache", "site", site.Name, "err", err)
-		os.Exit(1)
+		return 0, fmt.Errorf("encode cache: %w", err)
 	}
 
 	err = os.WriteFile(filepath.Join(cachePath, site.Name+".json"), b, os.ModePerm)
 	if err != nil {
-		slog.Error("failed writing cache", "site", site.Name, "err", err)
-		os.Exit(1)
+		return 0, fmt.Errorf("write cache: %w", err)
 	}
 
 	feed := &feeds.Feed{
@@ -314,20 +311,17 @@ func updateCache(site Site, cachePath string) (uint64, error) {
 
 	rendered.rss, err = feed.ToRss()
 	if err != nil {
-		slog.Error("failed building feed", "site", site.Name, "format", "rss", "err", err)
-		os.Exit(1)
+		return 0, fmt.Errorf("build rss feed: %w", err)
 	}
 
 	rendered.atom, err = feed.ToAtom()
 	if err != nil {
-		slog.Error("failed building feed", "site", site.Name, "format", "atom", "err", err)
-		os.Exit(1)
+		return 0, fmt.Errorf("build atom feed: %w", err)
 	}
 
 	rendered.json, err = feed.ToJSON()
 	if err != nil {
-		slog.Error("failed building feed", "site", site.Name, "format", "json", "err", err)
-		os.Exit(1)
+		return 0, fmt.Errorf("build json feed: %w", err)
 	}
 
 	publish(site.Name, rendered)
