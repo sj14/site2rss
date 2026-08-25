@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"html"
-	"log"
 	"log/slog"
 	"net/http"
 	"net/url"
@@ -15,6 +15,7 @@ import (
 	"os/signal"
 	"path/filepath"
 	"slices"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -43,6 +44,7 @@ type Selector struct {
 	Link        string `yaml:"link"`
 	Title       string `yaml:"title"`
 	Description string `yaml:"description"`
+	Pagination  string `yaml:"pagination"`
 }
 
 type Item struct {
@@ -63,7 +65,8 @@ func lookupEnvDuration(key string, defaultVal time.Duration) time.Duration {
 	if val, ok := os.LookupEnv(key); ok {
 		duration, err := time.ParseDuration(val)
 		if err != nil {
-			log.Fatalf("failed parsing %q as duration (%q): %v", val, key, err)
+			slog.Error("failed parsing duration", "value", val, "key", key, "err", err)
+			os.Exit(1)
 		}
 		return time.Duration(duration)
 	}
@@ -81,7 +84,8 @@ func main() {
 
 	confBytes, err := os.ReadFile(*configPath)
 	if err != nil {
-		log.Fatalln(err)
+		slog.Error("failed reading config", "path", *configPath, "err", err)
+		os.Exit(1)
 	}
 
 	var config Config
@@ -89,7 +93,8 @@ func main() {
 
 	err = decoder.Decode(&config)
 	if err != nil {
-		log.Fatalln(err)
+		slog.Error("failed decoding config", "path", *configPath, "err", err)
+		os.Exit(1)
 	}
 
 	go func() {
@@ -99,7 +104,7 @@ func main() {
 			for _, site := range config.Sites {
 				count, err := updateCache(site, *cachePath)
 				if err != nil {
-					log.Println(err)
+					slog.Error("failed updating cache", "site", site.Name, "err", err)
 					// do not continue the loop to update the metrics below
 				}
 
@@ -176,61 +181,31 @@ var (
 )
 
 func updateCache(site Site, cachePath string) (uint64, error) {
-	client := http.Client{Timeout: 10 * time.Second}
-
 	siteURL, err := url.Parse(site.URL)
 	if err != nil {
 		return 0, fmt.Errorf("failed to parse URL %q: %w", site.URL, err)
 	}
 
-	resp, err := client.Get(site.URL)
+	doc, err := fetchDocument(site.URL)
 	if err != nil {
-		return 0, fmt.Errorf("failed loading site (%q): %w", site.URL, err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return 0, fmt.Errorf("non 200 status for %q", site.URL)
+		return 0, err
 	}
 
-	doc, err := goquery.NewDocumentFromReader(resp.Body)
-	if err != nil {
-		return 0, fmt.Errorf("parse document: %w", err)
-	}
+	items := appendItems(nil, doc, site, siteURL)
 
-	var items []Item
+	for _, pageURL := range paginationURLs(doc, site, siteURL) {
+		// arte answers with 429 when the pages are requested too fast
+		time.Sleep(paginationDelay)
 
-	doc.Find(site.Selector.Item).Each(func(i int, s *goquery.Selection) {
-		var (
-			title       = getField(s, site.Selector.Title)
-			linkRaw     = getField(s, site.Selector.Link)
-			description = getField(s, site.Selector.Description)
-		)
-
-		link, err := url.JoinPath(siteURL.Host, linkRaw)
+		pageDoc, err := fetchDocument(pageURL)
 		if err != nil {
-			log.Printf("failed to join URL: %v\n", err)
-			return
+			// keep serving the previous feed rather than dropping the items of
+			// this page and re-adding them as new on the next run
+			return 0, err
 		}
 
-		link = strings.TrimSpace(link)
-		if !strings.HasPrefix(link, "http") {
-			link = "https://" + link
-		}
-
-		for _, item := range items {
-			if item.Link == link {
-				return
-			}
-		}
-
-		items = append(items, Item{
-			Link:        link,
-			Title:       normalizeSpace(html.UnescapeString(title)),
-			Description: normalizeSpace(html.UnescapeString(description)),
-			AddedAt:     time.Now().UTC(),
-		})
-	})
+		items = appendItems(items, pageDoc, site, siteURL)
+	}
 
 	var oldEntries []Item
 
@@ -238,12 +213,14 @@ func updateCache(site Site, cachePath string) (uint64, error) {
 	if err != nil {
 		if !strings.Contains(err.Error(), "no such file or directory") &&
 			!strings.Contains(err.Error(), "The system cannot find the file specified.") {
-			log.Panicln(err)
+			slog.Error("failed reading cache", "site", site.Name, "err", err)
+			panic(err)
 		}
 	} else {
 		err = json.Unmarshal(loaded, &oldEntries)
 		if err != nil {
-			log.Panicln(err)
+			slog.Error("failed decoding cache", "site", site.Name, "err", err)
+			panic(err)
 		}
 	}
 
@@ -273,12 +250,14 @@ func updateCache(site Site, cachePath string) (uint64, error) {
 
 	b, err := json.MarshalIndent(items, "", "  ")
 	if err != nil {
-		log.Fatal(err)
+		slog.Error("failed encoding cache", "site", site.Name, "err", err)
+		os.Exit(1)
 	}
 
 	err = os.WriteFile(filepath.Join(cachePath, site.Name+".json"), b, os.ModePerm)
 	if err != nil {
-		log.Fatal(err)
+		slog.Error("failed writing cache", "site", site.Name, "err", err)
+		os.Exit(1)
 	}
 
 	feed := &feeds.Feed{
@@ -299,26 +278,194 @@ func updateCache(site Site, cachePath string) (uint64, error) {
 
 	rss, err := feed.ToRss()
 	if err != nil {
-		log.Fatal(err)
+		slog.Error("failed building feed", "site", site.Name, "format", "rss", "err", err)
+		os.Exit(1)
 	}
 
 	state[strings.ToLower(site.Name)+"_rss"] = rss
 
 	atom, err := feed.ToAtom()
 	if err != nil {
-		log.Fatal(err)
+		slog.Error("failed building feed", "site", site.Name, "format", "atom", "err", err)
+		os.Exit(1)
 	}
 
 	state[strings.ToLower(site.Name)+"_atom"] = atom
 
 	json, err := feed.ToJSON()
 	if err != nil {
-		log.Fatal(err)
+		slog.Error("failed building feed", "site", site.Name, "format", "json", "err", err)
+		os.Exit(1)
 	}
 
 	state[strings.ToLower(site.Name)+"_json"] = json
 
 	return uint64(len(items)), nil
+}
+
+const (
+	// maxPaginationPages caps how many extra pages a single site may pull in, so a
+	// too broad pagination selector cannot turn one update into hundreds of requests.
+	maxPaginationPages = 10
+	// paginationDelay is the pause between two page requests of the same site.
+	// arte serves roughly ten requests per minute before it starts answering
+	// with 429, so the pages are spread out instead of run back to back.
+	paginationDelay = 10 * time.Second
+	// fetchAttempts, retryDelay and maxRetryDelay control the backoff once a page
+	// is rate limited anyway. retryDelay only applies when the response carries no
+	// usable Retry-After header.
+	fetchAttempts = 3
+	retryDelay    = 30 * time.Second
+	maxRetryDelay = 2 * time.Minute
+)
+
+// rateLimitError marks a response the site asked us to repeat later.
+type rateLimitError struct {
+	url        string
+	retryAfter time.Duration
+}
+
+func (e *rateLimitError) Error() string {
+	return fmt.Sprintf("rate limited for %q, retry after %s", e.url, e.retryAfter)
+}
+
+// retryAfter reads how long the site wants us to wait. The header may also hold
+// an HTTP date, which falls back to the fixed delay.
+func retryAfter(resp *http.Response) time.Duration {
+	seconds, err := strconv.Atoi(resp.Header.Get("Retry-After"))
+	if err != nil {
+		return retryDelay
+	}
+
+	return min(time.Duration(seconds)*time.Second, maxRetryDelay)
+}
+
+// fetchDocument loads and parses a single page. Arte answers with 429 when it
+// gets several requests in a short time, so a rate limited page is retried after
+// the delay the response asks for instead of losing its items.
+func fetchDocument(pageURL string) (*goquery.Document, error) {
+	client := http.Client{Timeout: 10 * time.Second}
+
+	var err error
+
+	for attempt := 1; attempt <= fetchAttempts; attempt++ {
+		var doc *goquery.Document
+
+		doc, err = fetchOnce(&client, pageURL)
+		if err == nil {
+			return doc, nil
+		}
+
+		var limited *rateLimitError
+		if !errors.As(err, &limited) {
+			return nil, err
+		}
+
+		if attempt < fetchAttempts {
+			slog.Warn("rate limited, retrying", "url", pageURL, "delay", limited.retryAfter)
+			time.Sleep(limited.retryAfter)
+		}
+	}
+
+	return nil, err
+}
+
+func fetchOnce(client *http.Client, pageURL string) (*goquery.Document, error) {
+	resp, err := client.Get(pageURL)
+	if err != nil {
+		return nil, fmt.Errorf("failed loading site (%q): %w", pageURL, err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusTooManyRequests {
+		return nil, &rateLimitError{url: pageURL, retryAfter: retryAfter(resp)}
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("non 200 status (%d) for %q", resp.StatusCode, pageURL)
+	}
+
+	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("parse document (%q): %w", pageURL, err)
+	}
+
+	return doc, nil
+}
+
+// paginationURLs resolves the links the pagination selector matches on the given
+// document. The links are only followed one level deep, so the pages behind a
+// "show more" button are picked up without crawling the whole site.
+func paginationURLs(doc *goquery.Document, site Site, siteURL *url.URL) []string {
+	if site.Selector.Pagination == "" {
+		return nil
+	}
+
+	var (
+		urls []string
+		seen = map[string]bool{siteURL.String(): true}
+	)
+
+	for _, href := range getFields(doc.Selection, site.Selector.Pagination) {
+		ref, err := url.Parse(strings.TrimSpace(href))
+		if err != nil {
+			slog.Warn("failed parsing pagination URL", "site", site.Name, "url", href, "err", err)
+			continue
+		}
+
+		pageURL := siteURL.ResolveReference(ref).String()
+		if seen[pageURL] {
+			continue
+		}
+		seen[pageURL] = true
+
+		urls = append(urls, pageURL)
+	}
+
+	if len(urls) > maxPaginationPages {
+		slog.Warn("dropping pagination pages beyond the limit", "site", site.Name, "found", len(urls), "limit", maxPaginationPages)
+		urls = urls[:maxPaginationPages]
+	}
+
+	return urls
+}
+
+// appendItems extracts the items of a single page, skipping the ones already
+// collected from previous pages.
+func appendItems(items []Item, doc *goquery.Document, site Site, siteURL *url.URL) []Item {
+	doc.Find(site.Selector.Item).Each(func(i int, s *goquery.Selection) {
+		var (
+			title       = getField(s, site.Selector.Title)
+			linkRaw     = getField(s, site.Selector.Link)
+			description = getField(s, site.Selector.Description)
+		)
+
+		link, err := url.JoinPath(siteURL.Host, linkRaw)
+		if err != nil {
+			slog.Warn("failed joining URL", "site", site.Name, "link", linkRaw, "err", err)
+			return
+		}
+
+		link = strings.TrimSpace(link)
+		if !strings.HasPrefix(link, "http") {
+			link = "https://" + link
+		}
+
+		for _, item := range items {
+			if item.Link == link {
+				return
+			}
+		}
+
+		items = append(items, Item{
+			Link:        link,
+			Title:       normalizeSpace(html.UnescapeString(title)),
+			Description: normalizeSpace(html.UnescapeString(description)),
+			AddedAt:     time.Now().UTC(),
+		})
+	})
+
+	return items
 }
 
 // normalizeSpace trims the value and collapses runs of whitespace into a single
@@ -327,18 +474,39 @@ func normalizeSpace(s string) string {
 	return strings.Join(strings.Fields(s), " ")
 }
 
+// getFields returns one value per element the selector matches. A selector of the
+// form "attr@css" reads that attribute, otherwise the element text is used.
+// Elements without the attribute are skipped.
+func getFields(s *goquery.Selection, selector string) []string {
+	attr, css, isAttr := strings.Cut(selector, "@")
+	if !isAttr {
+		css = selector
+	}
+
+	var values []string
+
+	s.Find(css).Each(func(i int, el *goquery.Selection) {
+		if !isAttr {
+			values = append(values, el.Text())
+			return
+		}
+
+		if val, ok := el.Attr(attr); ok {
+			values = append(values, val)
+		}
+	})
+
+	return values
+}
+
+// getField returns the first value the selector matches, or an empty string.
+// Taking a single element is what keeps a teaser that carries its title twice
+// (arte does) from ending up as "TitleTitle".
 func getField(s *goquery.Selection, selector string) string {
-	parts := strings.SplitN(selector, "@", 2)
-	el := s.Find(parts[len(parts)-1])
-	if len(parts) == 2 {
-		val, _ := el.Attr(parts[len(parts)-2])
-		return val
+	values := getFields(s, selector)
+	if len(values) == 0 {
+		return ""
 	}
-	// Workaround for Arte returning TitleTitle, not sure why.
-	// Can't see the issue in the HTML, e.g. the Selector matching twice.
-	// Needs further debugging.
-	if len(el.Nodes) > 1 {
-		el.Nodes = slices.Delete(el.Nodes, 1, 2)
-	}
-	return el.Text()
+
+	return values[0]
 }
