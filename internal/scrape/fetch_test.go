@@ -157,3 +157,51 @@ func TestFetchStopsOnShutdown(t *testing.T) {
 		t.Errorf("blocked for %s after cancellation", elapsed)
 	}
 }
+
+// TestSetSourceIP checks that a configured address really is the one the
+// connection is opened from. Binding to a loopback address would prove nothing,
+// the test server sits there anyway, so the check runs against an address the
+// host does not hold: only a dialer that actually binds can fail on that.
+func TestSetSourceIP(t *testing.T) {
+	shortenDelays(t)
+	t.Cleanup(func() { transport = http.DefaultTransport })
+
+	if err := SetSourceIP("enp1s0"); err == nil {
+		t.Error("accepted an interface name as an address")
+	}
+
+	if err := SetSourceIP(""); err != nil {
+		t.Errorf("empty source IP is the default, not an error: %v", err)
+	}
+
+	if transport != http.DefaultTransport {
+		t.Error("an empty source IP must leave the transport alone")
+	}
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte(`<html><body><div>ok</div></body></html>`))
+	}))
+	defer srv.Close()
+
+	// 192.0.2.1 is documentation space, no host holds it
+	if err := SetSourceIP("192.0.2.1"); err != nil {
+		t.Fatal(err)
+	}
+
+	if _, err := fetchDocument(t.Context(), srv.URL); err == nil {
+		t.Error("reached the server from an address the host does not have")
+	}
+
+	if err := SetSourceIP("127.0.0.1"); err != nil {
+		t.Fatal(err)
+	}
+
+	doc, err := fetchDocument(t.Context(), srv.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if doc.Find("div").Text() != "ok" {
+		t.Error("did not return the response")
+	}
+}

@@ -98,6 +98,26 @@ Each flag has an environment variable; the flag wins.
 | `-interval` | `INTERVAL` | `1h` | time between updates |
 | `-listen` | `LISTEN` | `:8080` | listen address |
 | `-log-level` | `LOG_LEVEL` | `info` | `debug` logs every extracted item |
+| `-source-ip` | `SOURCE_IP` | *(kernel picks)* | address the requests go out from |
+
+### Geoblocking
+
+Some sites serve a different catalogue depending on where the request comes
+from. arte.tv is the clear case: films licensed for Germany and France only are
+missing from the page entirely when it is fetched from elsewhere, so there is
+nothing for a selector to match.
+
+`-source-ip` picks which of the host's addresses the requests leave from. On a
+server with an additional address in the right country, that address is all it
+takes:
+
+```bash
+./site2rss -source-ip 203.0.113.10
+```
+
+The address has to exist on the host (`ip -brief a`); binding to one it does not
+hold fails every request. In Kubernetes the pod needs `hostNetwork: true`, since
+a pod's own namespace does not see the node's addresses.
 
 ## How items get their date
 

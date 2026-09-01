@@ -1,5 +1,71 @@
 [
   {
+    "Title": "Wo in Paris die Sonne aufgeht",
+    "Link": "https://www.zdf.de/filme/wo-in-paris-die-sonne-aufgeht-movie-102",
+    "Description": "",
+    "AddedAt": "2026-08-31T17:17:50.447964Z"
+  },
+  {
+    "Title": "Vesper Chronicles",
+    "Link": "https://www.zdf.de/filme/vesper-chronicles-movie-100",
+    "Description": "",
+    "AddedAt": "2026-08-31T17:17:50.447927Z"
+  },
+  {
+    "Title": "Street Fighter - Die entscheidende Schlacht",
+    "Link": "https://www.zdf.de/filme/street-fighter---die-entscheidende-schlacht-movie-102",
+    "Description": "",
+    "AddedAt": "2026-08-31T17:17:50.447919Z"
+  },
+  {
+    "Title": "Du lebst noch 24 Stunden",
+    "Link": "https://www.zdf.de/filme/du-lebst-noch-24-stunden-movie-102",
+    "Description": "",
+    "AddedAt": "2026-08-31T17:17:50.447915Z"
+  },
+  {
+    "Title": "Cop Land",
+    "Link": "https://www.zdf.de/filme/cop-land-movie-100",
+    "Description": "",
+    "AddedAt": "2026-08-31T17:17:50.447899Z"
+  },
+  {
+    "Title": "Basic Instinct 2",
+    "Link": "https://www.zdf.de/filme/basic-instinct-2-movie-100",
+    "Description": "",
+    "AddedAt": "2026-08-31T17:17:50.447883Z"
+  },
+  {
+    "Title": "Spooks - Verräter in den eigenen Reihen",
+    "Link": "https://www.zdf.de/filme/spooks---verraeter-in-den-eigenen-reihen-movie-100",
+    "Description": "",
+    "AddedAt": "2026-08-31T17:17:50.447878Z"
+  },
+  {
+    "Title": "Die Spur des Killers - Midnight in the Switchgrass",
+    "Link": "https://www.zdf.de/filme/die-spur-des-killers---midnight-in-the-switchgrass-movie-100",
+    "Description": "",
+    "AddedAt": "2026-08-31T17:17:50.447874Z"
+  },
+  {
+    "Title": "Code 3",
+    "Link": "https://www.zdf.de/filme/code-3-movie-100",
+    "Description": "",
+    "AddedAt": "2026-08-31T17:17:50.44782Z"
+  },
+  {
+    "Title": "Manhattan Love Story",
+    "Link": "https://www.zdf.de/filme/manhattan-love-story-movie-100",
+    "Description": "",
+    "AddedAt": "2026-08-31T17:17:50.447816Z"
+  },
+  {
+    "Title": "Verliebt in die Braut",
+    "Link": "https://www.zdf.de/filme/verliebt-in-die-braut-movie-100",
+    "Description": "",
+    "AddedAt": "2026-08-31T17:17:50.447809Z"
+  },
+  {
     "Title": "Sugar",
     "Link": "https://www.zdf.de/filme/sugar-movie-100",
     "Description": "",
@@ -10,18 +76,6 @@
     "Link": "https://www.zdf.de/filme/horizont-movie-100",
     "Description": "",
     "AddedAt": "2026-08-25T17:39:35.012667Z"
-  },
-  {
-    "Title": "Winner",
-    "Link": "https://www.zdf.de/filme/winner-movie-100",
-    "Description": "",
-    "AddedAt": "2026-08-25T17:39:35.012664Z"
-  },
-  {
-    "Title": "Teen Spirit",
-    "Link": "https://www.zdf.de/filme/teen-spirit-movie-100",
-    "Description": "",
-    "AddedAt": "2026-08-25T17:39:35.012661Z"
   },
   {
     "Title": "Femme",
@@ -60,28 +114,10 @@
     "AddedAt": "2026-08-25T17:39:35.012629Z"
   },
   {
-    "Title": "How To Have Sex",
-    "Link": "https://www.zdf.de/filme/how-to-have-sex-movie-100",
-    "Description": "",
-    "AddedAt": "2026-08-25T17:39:35.012575Z"
-  },
-  {
     "Title": "Challengers - Rivalen",
     "Link": "https://www.zdf.de/filme/challengers---rivalen-movie-100",
     "Description": "",
     "AddedAt": "2026-08-25T17:39:35.012569Z"
-  },
-  {
-    "Title": "Der Exorzismus von Emily Rose",
-    "Link": "https://www.zdf.de/filme/der-exorzismus-von-emily-rose-movie-100",
-    "Description": "",
-    "AddedAt": "2026-08-25T17:39:35.012562Z"
-  },
-  {
-    "Title": "So ist das Leben – Life Itself",
-    "Link": "https://www.zdf.de/filme/so-ist-das-leben--life-itself-movie-100",
-    "Description": "",
-    "AddedAt": "2026-08-25T17:39:35.012558Z"
   },
   {
     "Title": "Escape from the 21st Century",
@@ -96,18 +132,6 @@
     "AddedAt": "2026-08-25T17:39:35.012548Z"
   },
   {
-    "Title": "Das fliegende Auge",
-    "Link": "https://www.zdf.de/filme/das-fliegende-auge-movie-100",
-    "Description": "",
-    "AddedAt": "2026-08-25T17:39:35.012544Z"
-  },
-  {
-    "Title": "Insidious: Chapter 2",
-    "Link": "https://www.zdf.de/filme/insidious-chapter-2-movie-100",
-    "Description": "",
-    "AddedAt": "2026-08-25T17:39:35.012541Z"
-  },
-  {
     "Title": "Largo Winch: Der Preis des Geldes",
     "Link": "https://www.zdf.de/filme/largo-winch-der-preis-des-geldes-movie-100",
     "Description": "",
@@ -118,12 +142,6 @@
     "Link": "https://www.zdf.de/filme/largo-winch---toedliches-erbe-movie-100",
     "Description": "",
     "AddedAt": "2026-08-25T17:39:35.012534Z"
-  },
-  {
-    "Title": "The Warrior's Way",
-    "Link": "https://www.zdf.de/filme/the-warriors-way-movie-100",
-    "Description": "",
-    "AddedAt": "2026-08-25T17:39:35.012531Z"
   },
   {
     "Title": "Largo Winch: Die Burma Verschwörung",
@@ -168,24 +186,6 @@
     "AddedAt": "2026-08-25T17:39:35.012497Z"
   },
   {
-    "Title": "Hangman - Spiel mit dem Tod",
-    "Link": "https://www.zdf.de/filme/hangman---spiel-mit-dem-tod-movie-102",
-    "Description": "",
-    "AddedAt": "2026-08-25T17:39:35.012491Z"
-  },
-  {
-    "Title": "Dark Windows",
-    "Link": "https://www.zdf.de/filme/dark-windows-movie-100",
-    "Description": "",
-    "AddedAt": "2026-08-25T17:39:35.012488Z"
-  },
-  {
-    "Title": "Disconnect",
-    "Link": "https://www.zdf.de/filme/disconnect-movie-100",
-    "Description": "",
-    "AddedAt": "2026-08-25T17:39:35.012485Z"
-  },
-  {
     "Title": "The Card Counter",
     "Link": "https://www.zdf.de/filme/the-card-counter-movie-100",
     "Description": "",
@@ -228,12 +228,6 @@
     "AddedAt": "2026-08-25T17:39:35.012455Z"
   },
   {
-    "Title": "Liebe auf 4 Pfoten",
-    "Link": "https://www.zdf.de/filme/liebe-auf-4-pfoten-movie-100",
-    "Description": "",
-    "AddedAt": "2026-08-25T17:39:35.012451Z"
-  },
-  {
     "Title": "Booksmart",
     "Link": "https://www.zdf.de/filme/booksmart-movie-100",
     "Description": "",
@@ -258,22 +252,10 @@
     "AddedAt": "2026-08-25T17:39:35.012434Z"
   },
   {
-    "Title": "Meine schrecklich verwöhnte Familie",
-    "Link": "https://www.zdf.de/filme/meine-schrecklich-verwoehnte-familie-movie-100",
-    "Description": "",
-    "AddedAt": "2026-08-25T17:39:35.01243Z"
-  },
-  {
     "Title": "Tiny Wedding - Unsere mega kleine Hochzeit",
     "Link": "https://www.zdf.de/filme/tiny-wedding---unsere-mega-kleine-hochzeit-movie-100",
     "Description": "",
     "AddedAt": "2026-08-25T17:39:35.012424Z"
-  },
-  {
-    "Title": "Pleasure",
-    "Link": "https://www.zdf.de/filme/pleasure-movie-100",
-    "Description": "",
-    "AddedAt": "2026-06-21T18:40:56.783836Z"
   },
   {
     "Title": "Jagen auf Französisch",

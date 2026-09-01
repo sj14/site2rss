@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"net"
 	"net/http"
 	"strconv"
 	"time"
@@ -34,6 +35,39 @@ var (
 	// about their own window, and coming back a second too early wastes an attempt.
 	retryAfterBuffer = 1 * time.Second
 )
+
+// transport is what every fetch goes through. The default covers everything
+// unless the requests have to leave the host from a particular address, which is
+// what SetSourceIP is for.
+var transport http.RoundTripper = http.DefaultTransport
+
+// SetSourceIP binds outgoing requests to one of the local addresses. Sites that
+// serve different content per country decide by the address a request comes
+// from, so a host holding several addresses can pick which one it is seen as.
+// An empty ip leaves that choice to the kernel, which is the default.
+func SetSourceIP(ip string) error {
+	if ip == "" {
+		return nil
+	}
+
+	parsed := net.ParseIP(ip)
+	if parsed == nil {
+		return fmt.Errorf("parse source IP %q", ip)
+	}
+
+	// Clone keeps what the default transport brings along, proxy settings and
+	// connection pooling among them, and only changes how a connection is opened.
+	cloned := http.DefaultTransport.(*http.Transport).Clone()
+	cloned.DialContext = (&net.Dialer{
+		LocalAddr: &net.TCPAddr{IP: parsed},
+		Timeout:   30 * time.Second,
+		KeepAlive: 30 * time.Second,
+	}).DialContext
+
+	transport = cloned
+
+	return nil
+}
 
 // retryableError marks a failure a later attempt can plausibly fix, together
 // with how long to wait first. Anything else, a 404 or a page that does not
@@ -69,7 +103,7 @@ func retryAfter(resp *http.Response) time.Duration {
 // fetchDocument loads and parses a single page, repeating attempts that failed
 // for a reason that may well be gone a moment later.
 func fetchDocument(ctx context.Context, pageURL string) (*goquery.Document, error) {
-	client := http.Client{Timeout: fetchTimeout}
+	client := http.Client{Timeout: fetchTimeout, Transport: transport}
 
 	var err error
 

@@ -46,6 +46,7 @@ func main() {
 		updateInterval = flag.Duration("interval", lookupEnvDuration("INTERVAL", 1*time.Hour), "update interval")
 		addr           = flag.String("listen", lookupEnvString("LISTEN", ":8080"), "listen address")
 		logLevel       = flag.String("log-level", lookupEnvString("LOG_LEVEL", "info"), "log level (debug, info, warn, error)")
+		sourceIP       = flag.String("source-ip", lookupEnvString("SOURCE_IP", ""), "local address to send the scrape requests from")
 	)
 	flag.Parse()
 
@@ -58,6 +59,13 @@ func main() {
 	}
 
 	slog.SetLogLoggerLevel(level)
+
+	// sites that serve different content per country go by the address the
+	// request comes from, so a host with several addresses can pick one
+	if err := scrape.SetSourceIP(*sourceIP); err != nil {
+		slog.Error("failed setting source IP", "value", *sourceIP, "err", err)
+		os.Exit(1)
+	}
 
 	conf, err := config.Load(*configPath)
 	if err != nil {
