@@ -33,7 +33,7 @@ var (
 	transientDelay = 5 * time.Second
 	// retryAfterBuffer is added to the delay a site asks for. Sites are not exact
 	// about their own window, and coming back a second too early wastes an attempt.
-	retryAfterBuffer = 1 * time.Second
+	retryAfterBuffer = 10 * time.Second
 )
 
 // transport is what every fetch goes through. The default covers everything
