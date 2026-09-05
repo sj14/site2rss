@@ -14,8 +14,8 @@ sites:
     title: "ZDF Spielfilm-Highlights"
     description: "Internationale Filme mit spannenden und emotionalen Geschichten. Ob Krimi, Drama, Komödie, Lovestory oder Thriller, für jeden Geschmack wird etwas geboten."
     selector:
-      item: "div[data-testid='teaser-tile']:has(a[href*='-movie-'])"
-      link: "a::attr(href)"
+      item: "a[data-testid='teaser-tile'][href*='-movie-']"
+      link: "::attr(href)"
       title: "h3::text"
       description: ""
       pagination: ""
