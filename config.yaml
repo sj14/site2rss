@@ -30,3 +30,15 @@ sites:
       description: ""
       # ?page=1 liefert dieselbe Seite wie die Basis-URL
       pagination: "a[href*='?page=']:not([href$='page=1'])::attr(href)"
+  - name: "Joyn"
+    url: "https://www.joyn.de/filme"
+    title: "Joyn Filme"
+    description: "Filme kostenlos streamen auf Joyn: Die beliebtesten und neuesten Filme im Überblick."
+    selector:
+      # Joyn liefert nur die ersten Reihen im HTML aus, die weiteren lädt die Seite
+      # erst per GraphQL nach. Hier ist also nur sichtbar, was die oberen Reihen zeigen.
+      item: "a[data-testid='LL--movie']"
+      link: "::attr(href)"
+      title: "h3::text"
+      description: ""
+      pagination: ""

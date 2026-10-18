@@ -57,8 +57,9 @@ func loadFixture(t *testing.T, name string) *goquery.Document {
 func TestConfiguredSelectors(t *testing.T) {
 	// ARD is 69 teasers on the page, minus one duplicate link and minus one film
 	// that is listed twice under different slugs. ZDF is 48 tiles, three of which
-	// repeat a film that another row already shows.
-	want := map[string]int{"ARD": 67, "ZDF": 45, "Arte": 10}
+	// repeat a film that another row already shows. Joyn is the 30 tiles of the
+	// rows its HTML carries, minus the films that appear in more than one of them.
+	want := map[string]int{"ARD": 67, "ZDF": 45, "Arte": 10, "Joyn": 27}
 
 	for _, site := range loadConfig(t).Sites {
 		t.Run(site.Name, func(t *testing.T) {
