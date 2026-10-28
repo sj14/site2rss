@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bytes"
 	"compress/gzip"
+	"io"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -26,12 +28,12 @@ func loadConfig(t *testing.T) config.Config {
 	return conf
 }
 
-// loadFixture parses the stored copy of a site. The pages are kept gzipped, they
-// are around 800 KB each uncompressed.
-func loadFixture(t *testing.T, name string) *goquery.Document {
+// readFixture returns the stored copy of a site. The copies are kept gzipped,
+// the pages are around 800 KB each uncompressed.
+func readFixture(t *testing.T, file string) []byte {
 	t.Helper()
 
-	f, err := os.Open(filepath.Join("testdata", name+".html.gz"))
+	f, err := os.Open(filepath.Join("testdata", file))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -43,12 +45,41 @@ func loadFixture(t *testing.T, name string) *goquery.Document {
 	}
 	defer r.Close()
 
-	doc, err := goquery.NewDocumentFromReader(r)
+	b, err := io.ReadAll(r)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return b
+}
+
+// loadFixture parses the stored copy of an html site.
+func loadFixture(t *testing.T, name string) *goquery.Document {
+	t.Helper()
+
+	doc, err := goquery.NewDocumentFromReader(bytes.NewReader(readFixture(t, name+".html.gz")))
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	return doc
+}
+
+// extractFixture runs the configured extraction over the stored copy of a site.
+// A JSON API is stored as the response it sent, everything else as a page.
+func extractFixture(t *testing.T, site config.Site, siteURL *url.URL) []scrape.Item {
+	t.Helper()
+
+	if site.Format != config.FormatJSON {
+		return scrape.Extract(loadFixture(t, site.Name), site, siteURL)
+	}
+
+	items, err := scrape.ExtractJSON(readFixture(t, site.Name+".json.gz"), site, siteURL)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return items
 }
 
 // TestConfiguredSelectors checks what the configured selectors pull out of the
@@ -61,8 +92,12 @@ func TestConfiguredSelectors(t *testing.T) {
 	// rows its HTML carries, minus the films that appear in more than one of them.
 	// JustWatch is the films tagged as free plus the free top 10, which carries no
 	// tag; rentals and series are left out. Pluto is every film tile on the page,
-	// minus the films the hero and several rows share.
-	want := map[string]int{"ARD": 67, "ZDF": 45, "Arte": 10, "Joyn": 27, "JustWatch": 45, "Pluto": 105}
+	// minus the films the hero and several rows share. Tele5 is the 34 entries of
+	// its json-ld ItemList, Rakuten the 48 entries the API was asked for.
+	want := map[string]int{
+		"ARD": 67, "ZDF": 45, "Arte": 10, "Joyn": 27, "JustWatch": 45, "Pluto": 105,
+		"Tele5": 34, "Rakuten": 48,
+	}
 
 	for _, site := range loadConfig(t).Sites {
 		t.Run(site.Name, func(t *testing.T) {
@@ -71,7 +106,7 @@ func TestConfiguredSelectors(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			items := scrape.Extract(loadFixture(t, site.Name), site, siteURL)
+			items := extractFixture(t, site, siteURL)
 			if len(items) != want[site.Name] {
 				t.Errorf("got %d items, want %d", len(items), want[site.Name])
 			}
@@ -101,6 +136,12 @@ func TestPaginationSelector(t *testing.T) {
 	want := map[string]int{"ARD": 3, "ZDF": 0, "Arte": 9}
 
 	for _, site := range loadConfig(t).Sites {
+		// only html pages are searched for pagination, the config rejects it for
+		// the other formats
+		if site.Format != config.FormatHTML {
+			continue
+		}
+
 		t.Run(site.Name, func(t *testing.T) {
 			siteURL, err := url.Parse(site.URL)
 			if err != nil {

@@ -53,6 +53,12 @@ func Save(dir, name string, items []scrape.Item) error {
 		return fmt.Errorf("encode cache: %w", err)
 	}
 
+	// the directory is missing on a fresh install, and the default "cache" is
+	// relative, so it is not something to ask the user to create first
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return fmt.Errorf("create cache dir: %w", err)
+	}
+
 	tmp, err := os.CreateTemp(dir, name+".*.tmp")
 	if err != nil {
 		return fmt.Errorf("create cache: %w", err)

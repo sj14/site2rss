@@ -40,12 +40,22 @@ func Collect(ctx context.Context, site config.Site) ([]Item, error) {
 		return nil, fmt.Errorf("parse URL %q: %w", site.URL, err)
 	}
 
+	// a JSON API is no html document, everything else is read from one
+	if site.Format == config.FormatJSON {
+		body, err := fetchBody(ctx, site.URL)
+		if err != nil {
+			return nil, err
+		}
+
+		return ExtractJSON(body, site, siteURL)
+	}
+
 	doc, err := fetchDocument(ctx, site.URL)
 	if err != nil {
 		return nil, err
 	}
 
-	items := appendItems(nil, doc, site, siteURL)
+	items := Extract(doc, site, siteURL)
 
 	for _, pageURL := range PaginationURLs(doc, site, siteURL) {
 		// arte answers with 429 when the pages are requested too fast
@@ -66,8 +76,13 @@ func Collect(ctx context.Context, site config.Site) ([]Item, error) {
 	return items, nil
 }
 
-// Extract returns the items of a single already loaded page.
+// Extract returns the items of a single already loaded html page, read either
+// through the css selectors or from its json-ld.
 func Extract(doc *goquery.Document, site config.Site, siteURL *url.URL) []Item {
+	if site.Format == config.FormatJSONLD {
+		return appendJSONLDItems(nil, doc, site, siteURL)
+	}
+
 	return appendItems(nil, doc, site, siteURL)
 }
 
@@ -87,25 +102,32 @@ func appendItems(items []Item, doc *goquery.Document, site config.Site, siteURL 
 			return
 		}
 
-		link, err := resolveURL(siteURL, found[0])
-		if err != nil {
-			slog.Warn("failed resolving item URL", "site", site.Name, "err", err)
-			return
-		}
-
-		if isDuplicate(items, title, link) {
-			return
-		}
-
-		items = append(items, Item{
-			Link:        link,
-			Title:       title,
-			Description: description,
-			AddedAt:     time.Now().UTC(),
-		})
+		items = appendItem(items, site, siteURL, title, description, found[0])
 	})
 
 	return items
+}
+
+// appendItem adds one entry with its link resolved against the site, unless the
+// link does not resolve or the entry was already collected. Every format ends
+// here, so they all deduplicate the same way.
+func appendItem(items []Item, site config.Site, siteURL *url.URL, title, description, href string) []Item {
+	link, err := resolveURL(siteURL, href)
+	if err != nil {
+		slog.Warn("failed resolving item URL", "site", site.Name, "err", err)
+		return items
+	}
+
+	if isDuplicate(items, title, link) {
+		return items
+	}
+
+	return append(items, Item{
+		Link:        link,
+		Title:       title,
+		Description: description,
+		AddedAt:     time.Now().UTC(),
+	})
 }
 
 // isDuplicate reports whether the item was already collected. Beside the link,

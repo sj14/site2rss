@@ -78,6 +78,44 @@ between requests. Duplicates and links back to the start page are skipped.
       pagination: "a[href*='?page=']:not([href$='page=1'])::attr(href)"
 ```
 
+### Pages built by JavaScript
+
+site2rss does not run JavaScript. A page whose list is rendered in the browser
+has nothing for a css selector to match, but two other ways often work.
+
+**`format: "json-ld"`** reads the schema.org `ItemList` that many pages embed for
+search engines, and which is usually in the initial html even when the visible
+list is not. Its field names are fixed by the standard (`item.name`, `item.url`,
+`item.description`), so it takes no selectors:
+
+```yaml
+  - name: "Tele5"
+    url: "https://tele5.de/filme"
+    title: "Filme bei TELE 5"
+    format: "json-ld"
+```
+
+**`format: "json"`** reads the JSON API the page loads its list from (find it in
+the browser's developer tools, network tab). The selectors become dotted paths:
+`item` leads to the array of entries, `title` and `description` are paths inside
+one entry, and `link` is a URL template filled from the entry:
+
+```yaml
+  - name: "Rakuten"
+    url: "https://gizmo.rakuten.tv/v3/lists/free-recently-added-…&contents%5Bper_page%5D=48"
+    title: "Rakuten TV: Neue kostenlose Filme"
+    format: "json"
+    selector:
+      item: "data.contents.data"
+      link: "https://www.rakuten.tv/de/movies/{id}"
+      title: "title"
+```
+
+An entry missing a template value is skipped. A response that is not JSON or
+lacks the list fails the update, so the previous feed stays. How many entries a
+JSON feed holds is up to the API; Rakuten takes it as `per_page` in the URL.
+Pagination is only supported for html pages.
+
 ## Endpoints
 
 | Path | Content |
@@ -167,6 +205,8 @@ counts in `main_test.go`:
 ```bash
 curl -s https://www.ardmediathek.de/filme | gzip -9 > testdata/ARD.html.gz
 ```
+
+A JSON source is stored as the API response, as `testdata/<Name>.json.gz`.
 
 ## Docker
 

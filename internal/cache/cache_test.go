@@ -120,3 +120,17 @@ func TestSaveLoadRoundtrip(t *testing.T) {
 		t.Errorf("cache dir holds %d files, want only the cache itself", len(entries))
 	}
 }
+
+// TestSaveCreatesDir covers the first run, when the cache directory does not
+// exist yet.
+func TestSaveCreatesDir(t *testing.T) {
+	dir := filepath.Join(t.TempDir(), "missing", "cache")
+
+	if err := Save(dir, "Test", []scrape.Item{{Title: "Film", Link: "https://example.com/film"}}); err != nil {
+		t.Fatal(err)
+	}
+
+	if _, err := os.Stat(filepath.Join(dir, "Test.json")); err != nil {
+		t.Errorf("cache file not written: %v", err)
+	}
+}

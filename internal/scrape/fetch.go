@@ -1,9 +1,11 @@
 package scrape
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"log/slog"
 	"net"
 	"net/http"
@@ -100,19 +102,34 @@ func retryAfter(resp *http.Response) time.Duration {
 	return min(time.Duration(seconds)*time.Second+retryAfterBuffer, maxRetryDelay)
 }
 
-// fetchDocument loads and parses a single page, repeating attempts that failed
-// for a reason that may well be gone a moment later.
+// fetchDocument loads and parses a single html page.
 func fetchDocument(ctx context.Context, pageURL string) (*goquery.Document, error) {
+	body, err := fetchBody(ctx, pageURL)
+	if err != nil {
+		return nil, err
+	}
+
+	doc, err := goquery.NewDocumentFromReader(bytes.NewReader(body))
+	if err != nil {
+		return nil, fmt.Errorf("parse document (%q): %w", pageURL, err)
+	}
+
+	return doc, nil
+}
+
+// fetchBody loads a single page, repeating attempts that failed for a reason
+// that may well be gone a moment later.
+func fetchBody(ctx context.Context, pageURL string) ([]byte, error) {
 	client := http.Client{Timeout: fetchTimeout, Transport: transport}
 
 	var err error
 
 	for attempt := 1; attempt <= fetchAttempts; attempt++ {
-		var doc *goquery.Document
+		var body []byte
 
-		doc, err = fetchOnce(ctx, &client, pageURL)
+		body, err = fetchOnce(ctx, &client, pageURL)
 		if err == nil {
-			return doc, nil
+			return body, nil
 		}
 
 		// a cancelled context looks like a timeout here, but means we are shutting
@@ -154,7 +171,7 @@ func sleep(ctx context.Context, d time.Duration) error {
 	}
 }
 
-func fetchOnce(ctx context.Context, client *http.Client, pageURL string) (*goquery.Document, error) {
+func fetchOnce(ctx context.Context, client *http.Client, pageURL string) ([]byte, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, pageURL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("build request for %q: %w", pageURL, err)
@@ -182,10 +199,12 @@ func fetchOnce(ctx context.Context, client *http.Client, pageURL string) (*goque
 		return nil, fmt.Errorf("non 200 status (%d) for %q", resp.StatusCode, pageURL)
 	}
 
-	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("parse document (%q): %w", pageURL, err)
+		// the client timeout covers reading the body as well, so this is the same
+		// kind of hiccup as a failed request
+		return nil, &retryableError{url: pageURL, reason: "reading body failed", delay: transientDelay, err: err}
 	}
 
-	return doc, nil
+	return body, nil
 }
