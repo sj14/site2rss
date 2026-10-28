@@ -55,3 +55,13 @@ sites:
       title: "img::attr(alt)"
       description: ""
       pagination: ""
+  - name: "Pluto"
+    url: "https://pluto.tv/gsa/movies/"
+    title: "Pluto TV Filme"
+    description: "Kostenlose Filme auf Pluto TV."
+    selector:
+      item: "a[data-testid='region-link'][href^='/gsa/movies/']:not([href*='/category/'])"
+      link: "::attr(href)"
+      title: "::attr(aria-label)"
+      description: ""
+      pagination: ""
