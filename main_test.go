@@ -59,7 +59,9 @@ func TestConfiguredSelectors(t *testing.T) {
 	// that is listed twice under different slugs. ZDF is 48 tiles, three of which
 	// repeat a film that another row already shows. Joyn is the 30 tiles of the
 	// rows its HTML carries, minus the films that appear in more than one of them.
-	want := map[string]int{"ARD": 67, "ZDF": 45, "Arte": 10, "Joyn": 27}
+	// JustWatch is the films tagged as free plus the free top 10, which carries no
+	// tag; rentals and series are left out.
+	want := map[string]int{"ARD": 67, "ZDF": 45, "Arte": 10, "Joyn": 27, "JustWatch": 45}
 
 	for _, site := range loadConfig(t).Sites {
 		t.Run(site.Name, func(t *testing.T) {

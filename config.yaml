@@ -42,3 +42,16 @@ sites:
       title: "h3::text"
       description: ""
       pagination: ""
+  - name: "JustWatch"
+    url: "https://www.justwatch.com/de/justwatch-tv"
+    title: "JustWatch TV kostenlose Filme"
+    description: "Kostenlose Filme auf JustWatch TV."
+    selector:
+      # Das Poster trägt ein Tag: "Kostenlos" als Text bei freien Filmen, ein
+      # Einkaufstaschen-Icon bei Leihfilmen. Die Reihe "Top 10 kostenlose Titel"
+      # hat gar kein Tag, sie wird deshalb über ihre Überschrift mitgenommen.
+      item: "a[href*='/Film/']:has(span.title-poster__free-tag:not(:has(img))), div.classic-module:has(div.headline:contains('Top 10 kostenlose')) a[href*='/Film/']"
+      link: "::attr(href)"
+      title: "img::attr(alt)"
+      description: ""
+      pagination: ""
