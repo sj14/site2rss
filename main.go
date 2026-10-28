@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/signal"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
@@ -134,24 +135,36 @@ func main() {
 
 // updateLoop refreshes every site, waits, and starts over until the context is
 // cancelled. A site that fails keeps its previous feed and gauge value.
+//
+// The sites are updated concurrently, so a site with many pages does not hold
+// up the others. They share nothing but the HTTP transport, and each one still
+// requests its own pages one after the other.
 func updateLoop(ctx context.Context, conf config.Config, cachePath string, stores map[string]*feed.Store, interval time.Duration) {
 	for {
+		var wg sync.WaitGroup
+
 		for _, site := range conf.Sites {
-			count, err := updateSite(ctx, site, cachePath, stores[site.Name])
-			if err != nil {
-				if ctx.Err() != nil {
+			wg.Go(func() {
+				count, err := updateSite(ctx, site, cachePath, stores[site.Name])
+				if err != nil {
+					if ctx.Err() != nil {
+						return
+					}
+
+					// a failed update is not the same as "this site has no items",
+					// so the gauge keeps whatever the last successful run reported
+					slog.Error("failed updating site", "site", site.Name, "err", err)
 					return
 				}
 
-				// a failed update is not the same as "this site has no items",
-				// so the gauge keeps whatever the last successful run reported
-				slog.Error("failed updating site", "site", site.Name, "err", err)
-				continue
-			}
-
-			metrics.GetOrCreateGauge(fmt.Sprintf(`item_size{name=%q}`, site.Name), nil).Set(float64(count))
-			slog.Info("updated", "site", site.Name, "items", count)
+				metrics.GetOrCreateGauge(fmt.Sprintf(`item_size{name=%q}`, site.Name), nil).Set(float64(count))
+				slog.Info("updated", "site", site.Name, "items", count)
+			})
 		}
+
+		// the interval starts once every site is done, so a slow site does not
+		// end up being updated twice at the same time
+		wg.Wait()
 
 		timer := time.NewTimer(interval)
 		select {
