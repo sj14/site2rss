@@ -1,11 +1,12 @@
-FROM golang:1 AS build
+FROM --platform=$BUILDPLATFORM golang:1 AS build
+ARG TARGETOS TARGETARCH
 
 WORKDIR /go/src/app
-COPY . .
-
+COPY go.mod go.sum ./
 RUN go mod download
 
-RUN CGO_ENABLED=0 go build -o /go/bin/app
+COPY . .
+RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -o /go/bin/app
 
 FROM gcr.io/distroless/static-debian13
 
