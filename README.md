@@ -133,6 +133,7 @@ Each flag has an environment variable; the flag wins.
 | --- | --- | --- | --- |
 | `-config` | `CONFIG` | `config.yaml` | config file |
 | `-cache` | `CACHE` | `cache` | cache directory |
+| `-cache-retention` | `CACHE_RETENTION` | `2160h` (90 days) | how long items a site stopped listing are remembered |
 | `-interval` | `INTERVAL` | `1h` | time between updates |
 | `-listen` | `LISTEN` | `:8080` | listen address |
 | `-log-level` | `LOG_LEVEL` | `info` | `debug` logs every extracted item |
@@ -160,9 +161,15 @@ a pod's own namespace does not see the node's addresses.
 ## How items get their date
 
 Pages rarely say when an entry appeared, so site2rss remembers it. Every site has
-a `cache/<Name>.json` holding the items of the last run with the timestamp they
-were first seen. On the next run, anything whose **link** is already known keeps
-its original timestamp; everything else counts as new and sorts to the top.
+a `cache/<Name>.json` holding each item with the timestamp it was first seen and
+the time it was last listed. On the next run, anything whose **link** is already
+known keeps its original timestamp; everything else counts as new and sorts to
+the top.
+
+Items the site stops listing leave the feed but stay in the cache for
+`-cache-retention`. Some sites, Joyn for example, drop entries from the page for
+a while and list them again later; within the retention such an item comes back
+with its old timestamp instead of being announced as new.
 
 Two consequences worth knowing:
 

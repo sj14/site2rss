@@ -1,5 +1,6 @@
 // Package cache keeps the items of a site between runs. Without it every restart
-// would look like every item had just appeared.
+// would look like every item had just appeared, and so would every item a site
+// briefly stops listing.
 package cache
 
 import (
@@ -16,10 +17,10 @@ import (
 	"github.com/sj14/site2rss/internal/scrape"
 )
 
-// Load reads the items stored by the previous run. A missing file is the first
+// Load reads the entries stored by the previous run. A missing file is the first
 // run for this site, anything else is a real problem and must not be mistaken
 // for "nothing known yet".
-func Load(dir, name string) ([]scrape.Item, error) {
+func Load(dir, name string) ([]Entry, error) {
 	loaded, err := os.ReadFile(filepath.Join(dir, name+".json"))
 	if errors.Is(err, fs.ErrNotExist) {
 		return nil, nil
@@ -29,18 +30,18 @@ func Load(dir, name string) ([]scrape.Item, error) {
 		return nil, fmt.Errorf("read cache: %w", err)
 	}
 
-	var items []scrape.Item
-	if err := json.Unmarshal(loaded, &items); err != nil {
+	var entries []Entry
+	if err := json.Unmarshal(loaded, &entries); err != nil {
 		return nil, fmt.Errorf("decode cache: %w", err)
 	}
 
-	return items, nil
+	return entries, nil
 }
 
-// Save replaces the stored items. The new content goes to a temporary file that
+// Save replaces the stored entries. The new content goes to a temporary file that
 // is renamed into place, so a process killed mid write cannot leave a truncated
 // file behind that the next run would refuse to decode.
-func Save(dir, name string, items []scrape.Item) error {
+func Save(dir, name string, entries []Entry) error {
 	// the default encoder escapes &, < and > for embedding in html, which only
 	// makes the file harder to read
 	var buf bytes.Buffer
@@ -49,7 +50,7 @@ func Save(dir, name string, items []scrape.Item) error {
 	enc.SetEscapeHTML(false)
 	enc.SetIndent("", "  ")
 
-	if err := enc.Encode(items); err != nil {
+	if err := enc.Encode(entries); err != nil {
 		return fmt.Errorf("encode cache: %w", err)
 	}
 
@@ -86,24 +87,61 @@ func Save(dir, name string, items []scrape.Item) error {
 	return nil
 }
 
+// Entry is one stored item. LastSeen is when the site listed it the last time;
+// an item that drops off the page stays known until it has been gone longer than
+// the retention, so coming back does not make it look new. Embedding keeps the
+// file format of caches written before LastSeen existed.
+type Entry struct {
+	scrape.Item
+	LastSeen time.Time
+}
+
 // Merge carries the timestamp of already known items over, so only genuinely new
 // entries move to the top. The link is the identity here, the same one the feed
-// uses as item id. The result is sorted newest first.
-func Merge(items, cached []scrape.Item) []scrape.Item {
+// uses as item id.
+//
+// It returns the items for the feed, which are only those the site lists now,
+// and the entries to store, which also hold the items the site stopped listing
+// less than retention ago. Both are sorted newest first.
+func Merge(items []scrape.Item, cached []Entry, now time.Time, retention time.Duration) ([]scrape.Item, []Entry) {
 	knownSince := make(map[string]time.Time, len(cached))
-	for _, item := range cached {
-		knownSince[item.Link] = item.AddedAt
+	for _, entry := range cached {
+		knownSince[entry.Link] = entry.AddedAt
 	}
+
+	listed := make(map[string]bool, len(items))
+	entries := make([]Entry, 0, len(items)+len(cached))
 
 	for i, item := range items {
 		if addedAt, ok := knownSince[item.Link]; ok {
 			items[i].AddedAt = addedAt
 		}
+
+		listed[item.Link] = true
+		entries = append(entries, Entry{Item: items[i], LastSeen: now})
+	}
+
+	// an entry from a cache written before LastSeen existed has a zero
+	// LastSeen, so it is dropped here unless the site lists it again
+	for _, entry := range cached {
+		if listed[entry.Link] {
+			continue
+		}
+
+		if now.Sub(entry.LastSeen) > retention {
+			continue
+		}
+
+		entries = append(entries, entry)
 	}
 
 	slices.SortStableFunc(items, func(a, b scrape.Item) int {
 		return b.AddedAt.Compare(a.AddedAt)
 	})
 
-	return items
+	slices.SortStableFunc(entries, func(a, b Entry) int {
+		return b.AddedAt.Compare(a.AddedAt)
+	})
+
+	return items, entries
 }

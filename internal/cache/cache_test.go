@@ -16,9 +16,9 @@ func TestMerge(t *testing.T) {
 		newer = time.Date(2026, 6, 1, 0, 0, 0, 0, time.UTC)
 	)
 
-	cached := []scrape.Item{
-		{Title: "Alt", Link: "https://example.com/alt", AddedAt: old},
-		{Title: "Umbenannt", Link: "https://example.com/umbenannt", AddedAt: old},
+	cached := []Entry{
+		{Item: scrape.Item{Title: "Alt", Link: "https://example.com/alt", AddedAt: old}, LastSeen: old},
+		{Item: scrape.Item{Title: "Umbenannt", Link: "https://example.com/umbenannt", AddedAt: old}, LastSeen: old},
 	}
 
 	items := []scrape.Item{
@@ -27,7 +27,7 @@ func TestMerge(t *testing.T) {
 		{Title: "Neu", Link: "https://example.com/neu", AddedAt: newer},
 	}
 
-	got := Merge(items, cached)
+	got, entries := Merge(items, cached, newer, 24*time.Hour)
 
 	if len(got) != 3 {
 		t.Fatalf("got %d items, want 3", len(got))
@@ -44,6 +44,65 @@ func TestMerge(t *testing.T) {
 			t.Errorf("%q lost its timestamp: %s", item.Link, item.AddedAt)
 		}
 	}
+
+	// everything listed now is stored as seen now
+	if len(entries) != 3 {
+		t.Fatalf("got %d entries, want 3", len(entries))
+	}
+
+	for _, entry := range entries {
+		if !entry.LastSeen.Equal(newer) {
+			t.Errorf("%q last seen %s, want %s", entry.Link, entry.LastSeen, newer)
+		}
+	}
+}
+
+// TestMergeRetention covers sites like Joyn, where an item drops off the page
+// for a while and comes back: it must not be announced again.
+func TestMergeRetention(t *testing.T) {
+	var (
+		added = time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+		now   = time.Date(2026, 1, 10, 0, 0, 0, 0, time.UTC)
+	)
+
+	retention := 7 * 24 * time.Hour
+
+	cached := []Entry{
+		{Item: scrape.Item{Title: "Kurz weg", Link: "https://example.com/kurz", AddedAt: added}, LastSeen: now.Add(-time.Hour)},
+		{Item: scrape.Item{Title: "Lange weg", Link: "https://example.com/lange", AddedAt: added}, LastSeen: now.Add(-retention - time.Hour)},
+		// written before LastSeen existed
+		{Item: scrape.Item{Title: "Alter Cache", Link: "https://example.com/alter-cache", AddedAt: added}},
+	}
+
+	t.Run("gone items stay stored but leave the feed", func(t *testing.T) {
+		items, entries := Merge(nil, cached, now, retention)
+
+		if len(items) != 0 {
+			t.Errorf("got %d items in the feed, want none", len(items))
+		}
+
+		if len(entries) != 1 || entries[0].Link != "https://example.com/kurz" {
+			t.Errorf("got entries %+v, want only the briefly gone one", entries)
+		}
+
+		if !entries[0].LastSeen.Equal(now.Add(-time.Hour)) {
+			t.Errorf("LastSeen moved to %s although the item was not listed", entries[0].LastSeen)
+		}
+	})
+
+	t.Run("a returning item keeps its timestamp", func(t *testing.T) {
+		items := []scrape.Item{{Title: "Kurz weg", Link: "https://example.com/kurz", AddedAt: now}}
+
+		got, entries := Merge(items, cached, now, retention)
+
+		if len(got) != 1 || !got[0].AddedAt.Equal(added) {
+			t.Errorf("got %+v, want the original timestamp %s", got, added)
+		}
+
+		if len(entries) != 1 || !entries[0].LastSeen.Equal(now) {
+			t.Errorf("got entries %+v, want it seen now", entries)
+		}
+	})
 }
 
 func TestLoad(t *testing.T) {
@@ -71,11 +130,14 @@ func TestLoad(t *testing.T) {
 
 func TestSaveLoadRoundtrip(t *testing.T) {
 	dir := t.TempDir()
-	want := []scrape.Item{{
-		// & < > must survive without the encoder escaping them for html
-		Title:   "Sisi & ich <Film>",
-		Link:    "https://example.com/film",
-		AddedAt: time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC),
+	want := []Entry{{
+		Item: scrape.Item{
+			// & < > must survive without the encoder escaping them for html
+			Title:   "Sisi & ich <Film>",
+			Link:    "https://example.com/film",
+			AddedAt: time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC),
+		},
+		LastSeen: time.Date(2026, 2, 1, 0, 0, 0, 0, time.UTC),
 	}}
 
 	if err := Save(dir, "Test", want); err != nil {
@@ -88,7 +150,7 @@ func TestSaveLoadRoundtrip(t *testing.T) {
 	}
 
 	if len(got) != 1 || got[0].Title != want[0].Title || got[0].Link != want[0].Link ||
-		!got[0].AddedAt.Equal(want[0].AddedAt) {
+		!got[0].AddedAt.Equal(want[0].AddedAt) || !got[0].LastSeen.Equal(want[0].LastSeen) {
 		t.Errorf("got %+v, want %+v", got, want)
 	}
 
@@ -126,7 +188,7 @@ func TestSaveLoadRoundtrip(t *testing.T) {
 func TestSaveCreatesDir(t *testing.T) {
 	dir := filepath.Join(t.TempDir(), "missing", "cache")
 
-	if err := Save(dir, "Test", []scrape.Item{{Title: "Film", Link: "https://example.com/film"}}); err != nil {
+	if err := Save(dir, "Test", []Entry{{Item: scrape.Item{Title: "Film", Link: "https://example.com/film"}}}); err != nil {
 		t.Fatal(err)
 	}
 

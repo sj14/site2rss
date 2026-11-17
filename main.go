@@ -44,6 +44,7 @@ func main() {
 	var (
 		configPath     = flag.String("config", lookupEnvString("CONFIG", "config.yaml"), "path to the config file")
 		cachePath      = flag.String("cache", lookupEnvString("CACHE", "cache"), "path to the cache dir")
+		cacheRetention = flag.Duration("cache-retention", lookupEnvDuration("CACHE_RETENTION", 90*24*time.Hour), "how long to remember items a site stopped listing")
 		updateInterval = flag.Duration("interval", lookupEnvDuration("INTERVAL", 1*time.Hour), "update interval")
 		addr           = flag.String("listen", lookupEnvString("LISTEN", ":8080"), "listen address")
 		logLevel       = flag.String("log-level", lookupEnvString("LOG_LEVEL", "info"), "log level (debug, info, warn, error)")
@@ -109,7 +110,7 @@ func main() {
 	g, ctx := errgroup.WithContext(ctx)
 
 	g.Go(func() error {
-		updateLoop(ctx, conf, *cachePath, stores, *updateInterval)
+		updateLoop(ctx, conf, *cachePath, *cacheRetention, stores, *updateInterval)
 		return nil
 	})
 
@@ -139,13 +140,13 @@ func main() {
 // The sites are updated concurrently, so a site with many pages does not hold
 // up the others. They share nothing but the HTTP transport, and each one still
 // requests its own pages one after the other.
-func updateLoop(ctx context.Context, conf config.Config, cachePath string, stores map[string]*feed.Store, interval time.Duration) {
+func updateLoop(ctx context.Context, conf config.Config, cachePath string, cacheRetention time.Duration, stores map[string]*feed.Store, interval time.Duration) {
 	for {
 		var wg sync.WaitGroup
 
 		for _, site := range conf.Sites {
 			wg.Go(func() {
-				count, err := updateSite(ctx, site, cachePath, stores[site.Name])
+				count, err := updateSite(ctx, site, cachePath, cacheRetention, stores[site.Name])
 				if err != nil {
 					if ctx.Err() != nil {
 						return
@@ -178,7 +179,7 @@ func updateLoop(ctx context.Context, conf config.Config, cachePath string, store
 
 // updateSite refreshes one site: collect what it lists now, keep the timestamps
 // of what was already known, persist that and publish the rendered feeds.
-func updateSite(ctx context.Context, site config.Site, cachePath string, store *feed.Store) (uint64, error) {
+func updateSite(ctx context.Context, site config.Site, cachePath string, cacheRetention time.Duration, store *feed.Store) (uint64, error) {
 	items, err := scrape.Collect(ctx, site)
 	if err != nil {
 		return 0, err
@@ -189,13 +190,13 @@ func updateSite(ctx context.Context, site config.Site, cachePath string, store *
 		return 0, err
 	}
 
-	items = cache.Merge(items, cached)
+	items, entries := cache.Merge(items, cached, time.Now().UTC(), cacheRetention)
 
 	for _, item := range items {
 		slog.Debug("found", "site", site.Name, "title", item.Title, "description", item.Description, "link", item.Link)
 	}
 
-	if err := cache.Save(cachePath, site.Name, items); err != nil {
+	if err := cache.Save(cachePath, site.Name, entries); err != nil {
 		return 0, err
 	}
 
